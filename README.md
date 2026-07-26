@@ -41,6 +41,6 @@ project setup, widget install, topic design, and reading feedback back.
 - `founderping-<os>-<arch>.tar.gz` — CLI archive per platform.
 - `skill.tar.gz` — the installable skill bundle (see the prompt above).
 
-Run `sc sync_assets` in the main repo first so `skill/guide.md` and `skill/api.md`
+Run `fp sync_assets` in the main repo first so `skill/guide.md` and `skill/api.md`
 are current, then `make dist` and upload everything in `./dist` to a GitHub
 release. CI does this automatically on a `v*` tag (`.github/workflows/release.yml`).

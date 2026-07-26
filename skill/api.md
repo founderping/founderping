@@ -51,6 +51,7 @@ directly.
 | `GET·PATCH /projects/{id}/doc` | Read/replace the product doc (plain text) |
 | `GET·PATCH /projects/{id}/tag-tree` | Read/replace the tag tree (≤3 levels deep) |
 | `GET·PATCH /projects/{id}/attention-list` | Read/replace the attention list (≤5) |
+| `GET·PATCH /projects/{id}/identity` | Read/change the widget identity (mode + founder name) |
 | `GET·POST·DELETE /projects/{id}/keys` | List / mint / revoke widget keys (`pk_`) |
 | `GET·POST /projects/{id}/topics` | List / create topics |
 | `PATCH·DELETE /projects/{id}/topics/{topicId}` | Update / delete a topic |
@@ -60,7 +61,7 @@ directly.
 | `GET /projects/{id}/users` | List end-users (outreach targets) |
 | `POST /projects/{id}/outreach` | Start an outreach conversation with a user |
 | `POST /projects/{id}/conversations/{cid}/outreach` | Append to an outreach thread |
-| `GET /projects/{id}/status` | Mission-Control metrics for a time window |
+| `GET /projects/{id}/status` | Overview metrics for a time window |
 | `GET /projects/{id}/verify` | Config + billing health check |
 
 ---
@@ -117,7 +118,7 @@ Create a project under an org you own (`orgId` comes from `GET /me`).
 - **`brand`** (default) — the widget talks as an **AI feedback assistant for the product team** ("I'm the AI assistant for _App_; the team reads every chat"). Neutral and safe for any product; needs only `name`. Pick this when there's no single public founder or the team prefers a product voice.
 - **`founder`** — the widget talks as the **founder's AI stand-in** ("I'm _Alice_'s AI"). Warmer and more personal, so users feel they're talking almost directly to the founder — which tends to draw more candid feedback. Requires `founderName`. Pick this for founder-led / early-stage products.
 
-> **Images aren't set here.** Every project starts with a **default avatar**, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Custom logo / bot avatar and accent color aren't available through the API yet; the user sets those in the **Dashboard** (Project Settings → Morphing).
+> **Images aren't set here.** Every project starts with a **default avatar**, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Custom logo / bot avatar and accent color aren't available through the API yet (it's an image upload); the user sets those in the **Dashboard**, on the **Engage** page's **“Meet users as:”** card.
 
 ```bash
 founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"brand","doc":"# Acme\n\nAcme helps teams …"}'
@@ -127,8 +128,9 @@ founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"founder",
 → `201` with the created project (`{ id, name, organization_id, metadata, … }`).
 It already has a **Default Project Key**, a starter reactive topic plus example
 proactive topics, and the widget introduction seeded for the mode you chose —
-all editable afterward. Use the returned `id` for every project-scoped call
-below.
+all editable afterward (switch the voice or rename the founder later via
+`PATCH /projects/{id}/identity`). Use the returned `id` for every project-scoped
+call below.
 
 ---
 
@@ -159,7 +161,7 @@ founderping request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.e
 
 ### `GET·PATCH /projects/{id}/doc`
 
-The **product doc** that grounds every Scout conversation. Send and receive
+The **product doc** that grounds every conversation. Send and receive
 **plain text** — the server handles base64 for storage. Max 20,000 characters.
 
 ```bash
@@ -190,7 +192,7 @@ Returns `{ "tag_tree": ... }`.
 
 ### `GET·PATCH /projects/{id}/attention-list`
 
-`attention_list` is up to **5** short strings (≤ 300 chars each) the Scout should
+`attention_list` is up to **5** short strings (≤ 300 chars each) the AI should
 keep an ear out for. `PATCH` replaces the whole list; blank entries are dropped.
 
 ```bash
@@ -198,6 +200,30 @@ founderping request PATCH /projects/PROJECT_ID/attention-list '{"attention_list"
 ```
 
 Returns `{ "attention_list": [...] }`.
+
+### `GET·PATCH /projects/{id}/identity`
+
+Who the widget speaks **as** — the same Founder/Brand choice you made at
+creation (see *Create a project*), editable any time. `GET` returns the stored
+identity; `PATCH` changes it and **regenerates the self-introductions** from the
+resulting names, so the openers never drift from the name the AI presents.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `mode` | `brand` \| `founder` | Switch the voice. Omit to keep the current mode. |
+| `founderName` | string | The name the AI speaks as in **founder** mode. Required whenever the resulting mode is `founder`. |
+
+Brand mode speaks as the **product**, so its name always tracks the project name
+— change that with `PATCH /projects/{id}` (`name`), not here. An empty body just
+refreshes the introductions from the current names.
+
+```bash
+founderping request GET   /projects/PROJECT_ID/identity
+founderping request PATCH /projects/PROJECT_ID/identity '{"mode":"founder","founderName":"Alice"}'
+founderping request PATCH /projects/PROJECT_ID/identity '{"mode":"brand"}'
+```
+
+Returns `{ "identity": { "mode", "founder": { "display_name", "introductions" }, "brand": {…} } }`.
 
 ---
 
@@ -224,9 +250,9 @@ A **topic** is one thing you want to learn from users.
 | Field | Type | Notes |
 | --- | --- | --- |
 | `name` | string | Required on create. Display name (≤ 80 chars). |
-| `type` | `reactive` \| `proactive` | Required on create. `reactive` = waits for the user; `proactive` = the Scout opens. |
+| `type` | `reactive` \| `proactive` | Required on create. `reactive` = waits for the user; `proactive` = the AI opens. |
 | `hint` | object | The design brief — **exactly these four keys**, all optional strings (≤ 4,000 chars each): `context`, `goal`, `requirements`, `plan`. Unknown keys are rejected. See below. |
-| `openings` | string[] | Opener lines (≤ 500 chars each); the Scout uses one per conversation. Blank entries are dropped; **max 10**. |
+| `openings` | string[] | Opener lines (≤ 500 chars each); the AI uses one per conversation. Blank entries are dropped; **max 10**. |
 | `status` | `active` \| `archived` | Patch only. |
 | `enabled` | boolean | Whether the topic can fire. |
 | `direct_link_enabled` | boolean | Turns on the shareable direct link. |
@@ -400,7 +426,7 @@ founderping request POST /projects/PROJECT_ID/conversations/CONV_ID/outreach '{"
 
 ### `GET /projects/{id}/status`
 
-A Mission-Control snapshot for a time `window` (`7d`, `2w`, `1m`, or a bare day
+An Overview snapshot for a time `window` (`7d`, `2w`, `1m`, or a bare day
 count; default `7d`).
 
 ```bash

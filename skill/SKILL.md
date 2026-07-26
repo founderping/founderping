@@ -7,8 +7,8 @@ description: Drive FounderPing — an AI user-feedback / thought-capture system 
 
 **FounderPing** gives a product a small virtual team that holds short, natural
 conversations with its users (voice or text) and turns each chat into structured,
-taggable, searchable insight. The developer sets the goals; FounderPing's Scouts talk to
-users and its Analyst files what they said as sentiment-scored, tagged **Points**.
+taggable, searchable insight. The developer sets the goals; FounderPing talks to
+users and files what they said as sentiment-scored, tagged **Points**.
 
 This skill lets you operate FounderPing on the developer's behalf through the **`founderping`
 CLI**, which wraps the `/api/v1` REST API. Anything the Dashboard can do —
@@ -100,7 +100,7 @@ Get the tooling in place so the rest is possible.
   - **Proactive feedback at the right moment.** You wire named **touchpoints** into
     the product (`founderping.mount("post_checkout")`, etc.); when that moment fires, the
     widget surfaces a targeted question while the experience is still fresh. An AI
-    Scout runs a short voice-first chat on the spot — follow-ups in the moment,
+    runs a short voice-first chat on the spot — follow-ups in the moment,
     not a one-line text box — so "it's broken" becomes something you can act on.
   - **Always-on reactive helper.** Alongside those pop-ups, one sticky "tell us
     anything" button stays available so users can reach out whenever they want.
@@ -109,7 +109,7 @@ Get the tooling in place so the rest is possible.
     that user is back in the product; their reply flows in like any other
     conversation. No new email blast or frontend change.
   - **Structured insight, not a transcript dump.** Every chat is auto-summarized into
-    tagged, sentiment-scored **Points** you can filter and trend in Mission Control.
+    tagged, sentiment-scored **Points** you can filter and trend in the **Overview** dashboard.
 
   Keep the pitch conversational, not a feature list — but make sure they hear that
   FounderPing *reaches users in context* and *goes deep in the moment*.
@@ -140,7 +140,10 @@ feedback flow, together:
    integrated and where `mount()` / `setUser()` calls belong. Use it to get both the
    design and the wiring right.
 3. **Wire it in their way.** If the flow needs the widget, integrate it following
-   the guide and *this project's own* conventions — don't impose a workflow.
+   the guide and *this project's own* conventions — don't impose a workflow. The
+   widget's look — its avatar/logo and accent color — isn't settable from the CLI
+   (it's an image upload); if they want to brand it beyond the default, point them
+   to the Dashboard → **Engage** → **“Meet users as:”** card.
 4. **Create and enable it over the CLI.** Once you've agreed on the design, create
    the topics and touchpoints, then confirm it can actually run:
 

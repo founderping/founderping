@@ -53,31 +53,33 @@ Prefer the UI? **Sign up free** and follow the onboarding tutorial in the Dashbo
 1. **Create your Project — and pick its voice.** The **Organization** (your billing entity) is created for you on signup and `founderping login`; a **Project** is one product/app you want feedback on, and you create it explicitly — in the Dashboard, or with `POST /orgs/{orgId}/projects` (see `api.md`). Creating one carries a choice worth making *with* the user: the widget's **identity mode**, i.e. who the AI speaks *as*.
   - **Brand** (default) — the widget talks as an AI feedback assistant for the product team. Neutral, fits any product, needs only the app name.
   - **Founder** — the widget talks as the founder's AI stand-in (“I'm Alice's AI”). More personal, so users feel they're speaking almost directly with the founder, which tends to draw more candid feedback; it needs the founder's name.
-  Ask which fits before creating, and default to Brand if they're unsure. Either way the widget opens with a **default avatar**: uploading a custom logo / bot avatar (and accent color) isn't available through the CLI/API yet, so if they want to brand it, send them to the Dashboard (**Project Settings → Morphing**, see §5.6).
-2. **Write your product context.** Drop in a free-form description of your product—what it does, who uses it, key terms. FounderPing injects this into every conversation so the AI sounds informed instead of generic. You write it in the project's **Playbook**.
+  Ask which fits before creating, and default to Brand if they're unsure — it's not permanent, so they can switch the voice (or rename the founder) later from the Dashboard's **Engage → “Meet users as:”** card or via `PATCH /projects/{id}/identity`. Either way the widget opens with a **default avatar**: uploading a custom logo / bot avatar (and accent color) isn't available through the CLI/API yet, so if they want to brand it, send them to the Dashboard — the **Engage** page, in the **“Meet users as:”** card (see §5.6).
+2. **Write your product context.** Drop in a free-form description of your product—what it does, who uses it, key terms. FounderPing injects this into every conversation so the AI sounds informed instead of generic. You write it in **Settings → Product Description**.
 3. **Define your taxonomy.** Set up the **Tag Tree** (how feedback should be labeled) and the **Attention List** (topics that should auto-flag a conversation, e.g. churn, billing, security). This is what turns raw chats into filterable, prioritized signal later (see §5.4–5.5).
 
 ### Step 1 — Decide what to ask (Topics)
 
-1. **Create Topics.** A Topic is something you want the Scouts to talk to users about—a churn reason, a reaction to a new feature, an onboarding check. It comes in two flavors:
+1. **Create Topics.** A Topic is something you want FounderPing to talk to users about—a churn reason, a reaction to a new feature, an onboarding check. It comes in two flavors:
   - **Reactive Topic — the always-on helper.** Exactly **one per project**. Once enabled, it sits behind a small sticky side button in your product, so users can open it whenever they want to say something. It’s a general “tell us anything” helper, not a targeted question.
-  - **Proactive Topics — targeted, pop-up questions.** **Zero to many per project**. Each one focuses on a single question or a specific class of issue, and the Scout raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
+  - **Proactive Topics — targeted, pop-up questions.** **Zero to many per project**. Each one focuses on a single question or a specific class of issue, and the AI raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
 
 Both flavors are configured through the same two core concepts, produced and edited either right on the page or through the CLI / API:
 
-- **Hint** — context for the AI, *not* shown to the user. It’s injected into the AI’s context during the chat so the Scout understands the background and what you’re trying to learn, and drives the conversation accordingly.
-- **Opening** — the first line(s) the Scout uses to start the chat—the first thing the user actually sees. A few are generated per Topic, deliberately different from one another, and the Scout picks one at random when the Topic fires (so the same person doesn't always get the same hello). A strong Opening weaves three beats into 1–2 short sentences (~40 words total): a **light self-introduction** (the Scout makes clear it's reaching out on behalf of the product team), a **clear purpose** (what it's hoping to learn, grounded in the Topic's goal/context), and **the actual opener** — for a Proactive Topic, a concrete first question that goes right to the point its Plan wants to explore; for the Reactive Topic, an open invitation to share whatever's on the user's mind.
+- **Hint** — context for the AI, *not* shown to the user. It’s injected into the AI’s context during the chat so the AI understands the background and what you’re trying to learn, and drives the conversation accordingly.
+- **Opening** — the first line(s) the user sees when a chat starts. FounderPing assembles it at runtime from **two pieces**, each picked at random so the same person doesn't always get the same hello:
+  - **Introduction** — project-level. Configured on **Engage → “Meet users as:”** (see §5.6): a few greeting / self-intro variants for the active identity mode (Founder or Brand). One variant is chosen each time a Topic fires.
+  - **Hook** — topic-level. The **Openings** you write per Topic: a few substantive candidates; one is chosen when that Topic fires. A strong hook is 1–2 short sentences (~40 words) with **clear purpose** (what you're hoping to learn, grounded in the Topic's goal/context) and **the actual opener** — for a Proactive Topic, a concrete first question that goes right to the point its Plan wants to explore; for the Reactive Topic, an open invitation to share whatever's on the user's mind. **Don't** put hi/hey/hello or a self-introduction in hooks; the Introduction already covers that beat.
 
 The Hint is split into short, **orthogonal** fields — each one captures a *different* dimension of the conversation, so any given detail belongs in exactly one field (don’t restate the same thing across them). A **Proactive Topic** uses four:
 
 - **Context** — the *situation*: what the dialogue is about and where/when it happens (which screen, after which action or event, what kind of user), plus any helpful background. It sets the scene; the goal and the questions do **not** go here.
 - **Goal** — the *objective*: the one core thing you want to learn from the user. A single sharp goal beats a grab-bag of five.
-- **Requirements** — the *guard-rails*: constraints and must-dos for how the Scout behaves — tone, what it must cover, what to avoid, whether to ask for contact details, and so on.
+- **Requirements** — the *guard-rails*: constraints and must-dos for how the AI behaves — tone, what it must cover, what to avoid, whether to ask for contact details, and so on.
 - **Plan** — the *flow*: a high-level path for how the conversation should move (the order of beats and the outcomes to aim for), not exact question wording.
 
-Keep every field tight — a sentence or two each (rough budget: ~30 words for Context, Goal, and Requirements, up to ~50 for Plan). The Hint is a quick brief the Scout skims before talking, not an essay; padding it only buries the signal.
+Keep every field tight — a sentence or two each (rough budget: ~30 words for Context, Goal, and Requirements, up to ~50 for Plan). The Hint is a quick brief the AI skims before talking, not an essay; padding it only buries the signal.
 
-A **Reactive Topic** is the open-ended “tell us anything” helper, so it uses just **one** of these — **Requirements**. With no fixed situation, single goal, or scripted flow to pin down, Context, Goal, and Plan are all dropped; only the guard-rails for how the Scout should behave still apply.
+A **Reactive Topic** is the open-ended “tell us anything” helper, so it uses just **one** of these — **Requirements**. With no fixed situation, single goal, or scripted flow to pin down, Context, Goal, and Plan are all dropped; only the guard-rails for how the AI should behave still apply.
 
 You don’t have to write any of this from scratch. You can **co-design the Topic with FounderPing’s AI assistant** — describe your goal in a short chat and it drafts the Hint fields and Openings with you — or hand it to **your own AI** with the *“Co-design with your AI”* button, which points your assistant at this guide and has it walk you through the same fields. Everything stays editable by hand.
 
@@ -100,12 +102,12 @@ A **Direct Link** is a shareable URL (and QR code) that opens a single Topic in 
 
 ### Step 3 — Conversations happen
 
-1. **Users talk, not type.** The Scout runs a short voice-or-text chat, asking follow-ups in the moment to turn “it’s broken” into something specific. Anonymous sessions stick to a real user once your app supplies a User Identifier (see §4.2).
+1. **Users talk, not type.** The AI runs a short voice-or-text chat, asking follow-ups in the moment to turn “it’s broken” into something specific. Anonymous sessions stick to a real user once your app supplies a User Identifier (see §4.2).
 2. **Everything is captured.** Each chat is stored as a Conversation tied to its Topic, user, and moment—ready for processing.
 
 ### Step 4 — Feedback is processed automatically
 
-1. **Summarized into Points.** After a conversation ends, the Analyst pipeline extracts atomic **Points**: a one-line gist, a short summary, sentiment, tags from your Tag Tree, and an attention flag (see §5.9).
+1. **Summarized into Points.** After a conversation ends, FounderPing extracts atomic **Points**: a one-line gist, a short summary, sentiment, tags from your Tag Tree, and an attention flag (see §5.9).
 2. **Organized for you.** Points are labeled and flagged so urgent or on-watch items surface instead of getting buried.
 
 ### Step 5 — Read, prioritize, and act
@@ -115,7 +117,7 @@ A **Direct Link** is a shareable URL (and QR code) that opens a single Topic in 
   - **Follow up on a specific conversation.** Reply directly in the thread of an existing conversation to ask a clarifying question or dig deeper into what a user already said.
   - **Re-engage an existing user.** Start a fresh, direct conversation with a user you’ve talked to before.
   Either way the message reaches the user the next time they’re back in your product, and their reply flows into the Dashboard like any other conversation.
-2. **See the big picture.** **Mission Control** shows trends, sentiment and quality breakdowns, top tags, and a daily digest email (see §5.7).
+2. **See the big picture.** The **Overview** page shows trends, sentiment and quality breakdowns, top tags, and a daily digest email (see §5.7).
 3. **Close the loop and iterate.** Acting on feedback.
 
 ---
@@ -126,13 +128,13 @@ This chapter is written mainly for you, the AI assistant a developer has brought
 
 ### 3.1 Why proactive, in-product feedback is worth it
 
-In-product feedback is one of the highest-leverage things a team can build, and also one of the easiest to undervalue. Most teams learn too little, too late — through the patchwork of failing channels in §1: a tiny circle of friends, emails into the void, star ratings with no story, and silence from the users who matter most. Asking **in the moment, inside the product** flips that — the barrier to speak is low, the experience is fresh, and a Scout can dig past “it’s broken” to the actual why. For the developer that means a steady stream of specific, attributable signal: roadmap calls grounded in what real users said instead of guesswork. It’s worth carrying that perspective into the conversation — a developer unsure whether users will even talk is often just a few well-placed asks away from finding out they will.
+In-product feedback is one of the highest-leverage things a team can build, and also one of the easiest to undervalue. Most teams learn too little, too late — through the patchwork of failing channels in §1: a tiny circle of friends, emails into the void, star ratings with no story, and silence from the users who matter most. Asking **in the moment, inside the product** flips that — the barrier to speak is low, the experience is fresh, and the AI can dig past “it’s broken” to the actual why. For the developer that means a steady stream of specific, attributable signal: roadmap calls grounded in what real users said instead of guesswork. It’s worth carrying that perspective into the conversation — a developer unsure whether users will even talk is often just a few well-placed asks away from finding out they will.
 
 ### 3.2 Lead with their question, design alongside
 
 A developer usually arrives with something concrete — often a prompt pasted straight from an “Ask your AI” / “Co-design with your AI” button in the Dashboard, sometimes a specific question about the conversation they’re building. **Help with that first.** It’s what they came for, and it’s what earns you the room to suggest more.
 
-Keep this in mind as you do: because you understand their project and you’ve read this guide, you’re unusually well-placed to notice feedback opportunities they might miss. Developers are close to their product and often don’t realize which moments would yield the richest signal — or that a question they’re hand-wiring could be a Topic they retarget from the Dashboard without touching code again. The better you understand the product — from the repo, the Playbook (§5.3), or just the conversation — the sharper that instinct gets.
+Keep this in mind as you do: because you understand their project and you’ve read this guide, you’re unusually well-placed to notice feedback opportunities they might miss. Developers are close to their product and often don’t realize which moments would yield the richest signal — or that a question they’re hand-wiring could be a Topic they retarget from the Dashboard without touching code again. The better you understand the product — from the repo, the product context you’ve written (§5.3), or just the conversation — the sharper that instinct gets.
 
 So when you spot a good idea or a well-timed moment, **offer it**: say what it would capture and why it’s worth it, and if they’re interested, help them design and wire it. The point isn’t to push a process — it’s to use what you know to leave their product a little better instrumented than you found it. Suggest, don’t insist, and follow their lead on how far to take it.
 
@@ -153,7 +155,7 @@ These are heuristics, not a checklist. Every product has its own journey; the de
 
 Your job isn't to fire back one-liners when the developer asks a question — it's to help them **design a feedback touchpoint all the way through**, from the first idea to something they can ship. When they mention a goal, a feature, or a hunch about what to learn, think about the whole path and offer to walk it with them.
 
-**Start with their question, then widen the lens.** They might ask how to word an Opening or whether to use reactive or proactive. Answer that — and if you see the adjacent pieces they haven't thought about yet, bring them up: a Moment worth instrumenting (§3.3), the Hint fields that would shape the Scout's conversation, the Touchpoint name that keeps the code stable, the conditions so the ask doesn't nag, the exact `mount()` / `setUser()` call and where it belongs. Don't wait to be asked for each step.
+**Start with their question, then widen the lens.** They might ask how to word an Opening or whether to use reactive or proactive. Answer that — and if you see the adjacent pieces they haven't thought about yet, bring them up: a Moment worth instrumenting (§3.3), the Hint fields that would shape the AI's conversation, the Touchpoint name that keeps the code stable, the conditions so the ask doesn't nag, the exact `mount()` / `setUser()` call and where it belongs. Don't wait to be asked for each step.
 
 **Hand back concrete artifacts.** Where you can, deliver the drafted Hint fields and Openings, the touchpoint name, the Dashboard conditions to set, and the code snippets — not a vague plan they still have to interpret. The developer should leave with something they can paste, configure, and ship.
 
@@ -169,7 +171,7 @@ One principle runs through all of it: **your code only names moments—the Dashb
 
 ### 4.1 The install script
 
-Every integration starts with one `<script>` snippet. Copy it verbatim from the Dashboard (**Scout Team → Web Widget**)—it already has your project key filled in. (Working from the CLI/API instead? Mint a key with `POST /projects/{id}/keys` and drop it into the `data-project-key` slot yourself.)
+Every integration starts with one `<script>` snippet. Copy it verbatim from the Dashboard (**Engage → Web Widget**)—it already has your project key filled in. (Working from the CLI/API instead? Mint a key with `POST /projects/{id}/keys` and drop it into the `data-project-key` slot yourself.)
 
 ```html
 <script>!function(u,d){var w=window,e=document;if(w.founderping)return;var v,p=new Promise(r=>v=r);w.__sr=v;w.founderping=new Proxy({},{get:(_,m)=>function(){var a=w.__sa,g=[...arguments];return a?a[m].apply(a,g):p.then(()=>w.__sa[m].apply(w.__sa,g))}});var s=e.createElement("script");s.async=1;s.src=u;if(d)for(var k in d)s.setAttribute(k,d[k]);e.head.appendChild(s)}("https://founderping.app/founderping-widget.umd.js",{"data-project-key":"pk_your_project_key"});</script>
@@ -222,10 +224,10 @@ Everything is exposed on the global `window.founderping`. The install script reg
 
 **Touchpoints decouple code from configuration.** A call like `founderping.mount("post_checkout")` doesn't say “show this dialog”—it says *“this named moment just happened.”* Which Topic (if any) fires there, and under which Conditions, is bound in the Dashboard against that name. So a `mount(...)` is a **candidate**, not a command: the runtime may open it, open something else instead, or show nothing at all.
 
-**From `mount()` to a visible Scout.** When one or more moments fire, the Widget runs them through a short arbitration pipeline before anything appears:
+**From `mount()` to a visible widget.** When one or more moments fire, the Widget runs them through a short arbitration pipeline before anything appears:
 
 ```
-mount("…")  →  coalesce  →  guards  →  conditions  →  pick one Topic  →  at most one Scout
+mount("…")  →  coalesce  →  guards  →  conditions  →  pick one Topic  →  at most one widget
 ```
 
 1. **Coalesce — batch the burst.** `mount()` calls that land close together (including the Reactive button's own auto-mount and a page-load *restore*) are collected into one short window (`COALESCE_WINDOW_MS`) and resolved *together*, so the user never sees a stack of competing dialogs. A Touchpoint can also be set to fire only a fraction of the time (a **`probability`**); that dice roll happens here, and a Touchpoint that misses drops out before anything else is considered.
@@ -235,7 +237,7 @@ mount("…")  →  coalesce  →  guards  →  conditions  →  pick one Topic  
   If a Guard is holding the Widget, nothing new auto-opens; a page refresh simply restores whatever the user already had.
 3. **Conditions & pacing — eligibility and frequency gates.** Two kinds of gate decide whether a surviving candidate may actually fire, both evaluated in the end user's own local context:
   - **Per-binding Conditions.** Each Topic↔Touchpoint binding may carry time-of-day, weekday, and a per-user **cooldown** (“don't ask the same person about this Topic again so soon”). *All* conditions on a binding must pass. (Full list and exact semantics: **Appendix A.2**.)
-  - **Proactive pacing — a project-wide cooldown.** One global setting, **“Minimum time between proactive pop-ups”** in the Dashboard (**Scout Team**), throttles *every* proactive Topic together: once any proactive Scout has popped up, no new proactive pop-up appears until that gap elapses—so a project with many Touchpoints can't gang up on one user. It paces **proactive pop-ups only**: the Reactive “tell us anything” button, queued Outreach, and `force_show` moments are never held back by it. It's **off by default** (leave it at `0`/blank to disable), is capped at 7 days, and is measured from the last proactive pop-up (a page refresh on its own doesn't restart the clock).
+  - **Proactive pacing — a project-wide cooldown.** One global setting, **“Minimum time between proactive pop-ups”** in the Dashboard (**Engage**), throttles *every* proactive Topic together: once any proactive pop-up has appeared, no new proactive pop-up appears until that gap elapses—so a project with many Touchpoints can't gang up on one user. It paces **proactive pop-ups only**: the Reactive “tell us anything” button, queued Outreach, and `force_show` moments are never held back by it. It's **off by default** (leave it at `0`/blank to disable), is capped at 7 days, and is measured from the last proactive pop-up (a page refresh on its own doesn't restart the clock).
 4. **Pick one Topic.** A moment usually maps to a single Topic, but when several survive the gates above:
   - **Proactive beats Reactive** — an auto-pop-up Topic outranks the sticky “tell us anything” button; the button only wins when no proactive Topic is in the running.
   - **Stay on the current conversation** — if the user is already in one of the surviving Topics, the Widget keeps them there instead of switching.
@@ -246,13 +248,13 @@ mount("…")  →  coalesce  →  guards  →  conditions  →  pick one Topic  
 - **Outreach pre-empts a Topic.** If you've queued a direct **Outreach** for this user (a thread follow-up or re-engagement, §2 Step 5), it takes the slot ahead of whatever Topic the moment would otherwise have triggered.
 - **`force_show` overrides the gates.** A Touchpoint marked `force_show` in the Dashboard is for moments that must not be missed (post-purchase confirmation, error-recovery, a required notice). It **skips every gate above—both Guards and all Conditions (including the per-user cooldown and the project-wide proactive pacing)—and pre-empts Outreach**—so it appears even if the user just closed the Widget or is mid-conversation (it swaps its content in place). It still respects `probability`, and leaning on it too often erodes users' trust, so reserve it for genuinely critical moments.
 
-The net effect: think of `mount()` as *raising your hand*. The runtime referees every raised hand so the user ends up with **at most one** Scout, shown at a sensible time, never spammed.
+The net effect: think of `mount()` as *raising your hand*. The runtime referees every raised hand so the user ends up with **at most one** widget, shown at a sensible time, never spammed.
 
-**When a proactive Scout doesn't appear** (and you expected one), it's almost always one of the gates above doing its job: a **Guard** is active (the user recently *closed* the Widget, or is still mid-conversation), a per-binding **Condition** or **cooldown** hasn't elapsed yet, the project-wide **proactive pacing** window is still open from an earlier pop-up, or the Touchpoint's **`probability`** rolled it out this time. The Reactive “tell us anything” button is exempt from all of these, so it stays reachable even while proactive pop-ups are paused. For a moment that must always surface no matter what, mark its Touchpoint `force_show`.
+**When a proactive pop-up doesn't appear** (and you expected one), it's almost always one of the gates above doing its job: a **Guard** is active (the user recently *closed* the Widget, or is still mid-conversation), a per-binding **Condition** or **cooldown** hasn't elapsed yet, the project-wide **proactive pacing** window is still open from an earlier pop-up, or the Touchpoint's **`probability`** rolled it out this time. The Reactive “tell us anything” button is exempt from all of these, so it stays reachable even while proactive pop-ups are paused. For a moment that must always surface no matter what, mark its Touchpoint `force_show`.
 
 ### 4.4 Examples
 
-The Dashboard (**Scout Team → Web Widget**) generates ready-to-paste snippets for HTML, React, Next.js, and Vue with your real project key filled in. The HTML versions below show the shape of each step. (Drop in the install script from §4.1 first.)
+The Dashboard (**Engage → Web Widget**) generates ready-to-paste snippets for HTML, React, Next.js, and Vue with your real project key filled in. The HTML versions below show the shape of each step. (Drop in the install script from §4.1 first.)
 
 **Identify the user (after login).**
 
@@ -284,7 +286,7 @@ The Dashboard (**Scout Team → Web Widget**) generates ready-to-paste snippets 
 </script>
 ```
 
-**Fire a Touchpoint from your own logic.** A `mount` can hang off any condition and timing you like—here it waits for an engaged paid user, then holds off another moment so the Scout doesn't interrupt:
+**Fire a Touchpoint from your own logic.** A `mount` can hang off any condition and timing you like—here it waits for an engaged paid user, then holds off another moment so the AI doesn't interrupt:
 
 ```html
 <script>
@@ -316,19 +318,19 @@ For the Web Widget, FounderPing only answers requests coming from the **domains 
 
 ### 5.3 Documentation (your product context)
 
-This is the plain-language description of your product that FounderPing feeds into **every** conversation, so the Scout sounds like it already knows your app instead of asking from scratch. You write it in the project's **Playbook** (or via the API): what the product does, who uses it, the core flow, the words your users use, and the known rough edges. It's the single highest-leverage thing you can set—thin context yields thin, generic interviews—so the Dashboard nudges you whenever it's too short. You don't have to draft it by hand: the **“Ask your AI”** button hands you a ready-made prompt to paste into your coding agent (Claude Code, Codex, Cursor…), which reads your repo and writes a first version for you to refine.
+This is the plain-language description of your product that FounderPing feeds into **every** conversation, so the AI sounds like it already knows your app instead of asking from scratch. You write it in **Settings → Product Description** (or via the API): what the product does, who uses it, the core flow, the words your users use, and the known rough edges. It's the single highest-leverage thing you can set—thin context yields thin, generic interviews—so the Dashboard nudges you whenever it's too short. You don't have to draft it by hand: the **“Ask your AI”** button hands you a ready-made prompt to paste into your coding agent (Claude Code, Codex, Cursor…), which reads your repo and writes a first version for you to refine.
 
 ### 5.4 Tag Tree
 
-The **Tag Tree** is your feedback taxonomy. After each chat the Analyst attaches short tags from this tree to every **Point** (one atomic thing a user said), so you can later filter and count—“show me every *pricing* complaint.” The tree is hierarchical (up to three levels, broad at the top, finer below); the Analyst walks each branch top-down and attaches every tag that still fits, and a single Point can carry several. A sensible default tree ships out of the box so tagging works immediately—reshape it around your own product for sharper signal. Edit it in the **Playbook** (or via the API).
+The **Tag Tree** is your feedback taxonomy. After each chat FounderPing attaches short tags from this tree to every **Point** (one atomic thing a user said), so you can later filter and count—“show me every *pricing* complaint.” The tree is hierarchical (up to three levels, broad at the top, finer below); FounderPing walks each branch top-down and attaches every tag that still fits, and a single Point can carry several. A sensible default tree ships out of the box so tagging works immediately—reshape it around your own product for sharper signal. Edit it in **Insights → Tags & attention** (or via the API).
 
 ### 5.5 Attention List
 
-The **Attention List** is a short set of high-value signals you want caught the instant they appear—churn risk, security worries, pricing objections, or a launch-specific theme. When a conversation matches one, the Analyst stamps it with an **attention flag** so it rises to the top instead of getting buried. Keep it to a handful (up to five) of genuinely important items: it's a spotlight, not a second Tag Tree. Also set in the **Playbook** (or via the API).
+The **Attention List** is a short set of high-value signals you want caught the instant they appear—churn risk, security worries, pricing objections, or a launch-specific theme. When a conversation matches one, FounderPing stamps it with an **attention flag** so it rises to the top instead of getting buried. Keep it to a handful (up to five) of genuinely important items: it's a spotlight, not a second Tag Tree. Also set in **Insights → Tags & attention** (or via the API).
 
-### 5.6 Morphing — match the Widget to your brand
+### 5.6 Widget branding — match the Widget to your brand
 
-**Morphing** lets the Widget wear your brand instead of the defaults: pick an **accent color** (it drives the voice and send buttons, the input focus ring, and the “go away” pill) and upload a **bot avatar**, with a live preview as you edit and a one-click reset. It's available on every plan and purely cosmetic, so it never changes which questions fire or when. Set it in **Project Settings** — this is the one setup step the CLI/API can't do yet (it's an image upload), so a new project always starts on the default avatar until someone brands it here.
+**Widget branding** lets the Widget wear your brand instead of the defaults: pick an **accent color** (it drives the voice and send buttons, the input focus ring, and the “go away” pill) and upload a **bot avatar / logo**, with a live preview as you edit and a one-click reset. It's available on every plan and purely cosmetic, so it never changes which questions fire or when. Set it on the **Engage** page, in the **“Meet users as:”** card (the same card where you choose Founder vs Brand, name the AI, and edit the **introduction** variants that prepend every Opening — see Step 1) — this is the one setup step the CLI/API can't do yet (it's an image upload), so a new project always starts on the default avatar until someone brands it here.
 
 ### 5.7 Daily digest
 
@@ -345,7 +347,7 @@ A **Direct Link** is a shareable URL—plus a matching QR code—that opens a si
 
 ### 5.9 Points, sentiment & attention flags
 
-When a conversation ends, the Analyst doesn't just file the transcript—it breaks the chat into **Points**. A Point is one atomic thing the user expressed (a single complaint, request, or bit of praise), distilled to a one-line gist plus a short summary. Each Point carries three things you can act on:
+When a conversation ends, FounderPing doesn't just file the transcript—it breaks the chat into **Points**. A Point is one atomic thing the user expressed (a single complaint, request, or bit of praise), distilled to a one-line gist plus a short summary. Each Point carries three things you can act on:
 
 - **Sentiment** — positive, neutral, or negative, so you can read the mood at a glance and filter by it.
 - **Tags** — pulled from your Tag Tree (§5.4).

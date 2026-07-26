@@ -7,7 +7,7 @@
 #   - skill.tar.gz                       the installable skill bundle
 #
 # The Go module lives in ./cli; the skill sources live in ./skill (run
-# `sc sync_assets` in the main repo first so skill/guide.md + skill/api.md exist).
+# `fp sync_assets` in the main repo first so skill/guide.md + skill/api.md exist).
 
 BINARY    := founderping
 DIST      := dist
