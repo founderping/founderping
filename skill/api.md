@@ -7,68 +7,80 @@ directly.
 
 - **Base URL:** `https://founderping.app/api/v1` (override with `FOUNDERPING_API_URL`).
 - **Auth:** `Authorization: Bearer <access-key>` on every call. The CLI attaches
-  it for you; you never pass it by hand.
+it for you; you never pass it by hand.
 - **Content type:** requests and responses are JSON.
 
 ## Response envelope
 
 - **Success** → the resource itself, no wrapper. `200` for reads/updates, `201`
-  for creates, `{ "deleted": true }` for deletes.
+for creates, `{ "deleted": true }` for deletes.
 - **Error** → `{ "error": { "code": "...", "message": "..." } }` with a non-2xx
-  status. `founderping request` prints this and exits non-zero.
+status. `founderping request` prints this and exits non-zero.
 
-| Status | `code`            | Meaning                                        |
-| ------ | ----------------- | ---------------------------------------------- |
-| 400    | `invalid_request` | Bad/missing fields in the body or query        |
-| 401    | `unauthorized`    | Missing or invalid access key                  |
-| 403    | `forbidden`       | Authenticated, but not a member of that org    |
-| 404    | `not_found`       | Project / topic / … doesn't exist or isn't yours |
-| 402/*  | `billing_*`       | Org can't run (see `verify` → `billing_reason`)  |
-| 500    | `db_error` / `internal_error` | Something broke server-side        |
+
+| Status | `code`                        | Meaning                                          |
+| ------ | ----------------------------- | ------------------------------------------------ |
+| 400    | `invalid_request`             | Bad/missing fields in the body or query          |
+| 401    | `unauthorized`                | Missing or invalid access key                    |
+| 403    | `forbidden`                   | Authenticated, but not a member of that org      |
+| 404    | `not_found`                   | Project / topic / … doesn't exist or isn't yours |
+| 402/*  | `billing_`*                   | Org can't run (see `verify` → `billing_reason`)  |
+| 500    | `db_error` / `internal_error` | Something broke server-side                      |
+
+
+
 
 ## Conventions
 
 - Everything except `/me`, project creation, and the auth endpoints is
-  **project-scoped** under `/projects/{projectId}/…`. Get `projectId` from
-  `GET /me` — and if the org has none yet, create one first (see *Create a
-  project*).
+**project-scoped** under `/projects/{projectId}/…`. Get `projectId` from
+`GET /me` — and if the org has none yet, create one first (see *Create a
+project*).
 - A wrong or inaccessible `projectId` (or `topicId` / `touchpointId`) always
-  returns `404 not_found` — never a `200` with empty or zeroed data. So zeros in
-  a `status` / list response mean "no activity yet", not "bad id". If you get a
-  `not_found`, re-check the id against `GET /me`.
+returns `404 not_found` — never a `200` with empty or zeroed data. So zeros in
+a `status` / list response mean "no activity yet", not "bad id". If you get a
+`not_found`, re-check the id against `GET /me`.
 - Basic config (product doc, tag tree, attention list) is **read + modify only** —
-  every project is created with these, so there is no create/delete for them.
+every project is created with these, so there is no create/delete for them.
 - CSV query params take comma-separated values, e.g. `?status=summarized,archived`.
+
+
 
 ## Endpoint index
 
-| Method & path | Purpose |
-| --- | --- |
-| `GET /me` | List orgs/projects you can act on |
-| `POST /orgs/{orgId}/projects` | Create a project (choose the widget identity mode) |
-| `GET /projects/{id}` | Read a project (name, domains, metadata, doc) |
-| `PATCH /projects/{id}` | Update name / domains / metadata |
-| `GET·PATCH /projects/{id}/doc` | Read/replace the product doc (plain text) |
-| `GET·PATCH /projects/{id}/tag-tree` | Read/replace the tag tree (≤3 levels deep) |
-| `GET·PATCH /projects/{id}/attention-list` | Read/replace the attention list (≤5) |
-| `GET·PATCH /projects/{id}/identity` | Read/change the widget identity (mode + founder name) |
-| `GET·POST·DELETE /projects/{id}/keys` | List / mint / revoke widget keys (`pk_`) |
-| `GET·POST /projects/{id}/topics` | List / create topics |
-| `PATCH·DELETE /projects/{id}/topics/{topicId}` | Update / delete a topic |
-| `GET·POST /projects/{id}/touchpoints` | List / create touchpoints |
-| `PATCH·DELETE /projects/{id}/touchpoints/{tpId}` | Update / delete a touchpoint |
-| `GET /projects/{id}/conversations` | Search summarized conversations |
-| `GET /projects/{id}/users` | List end-users (outreach targets) |
-| `POST /projects/{id}/outreach` | Start an outreach conversation with a user |
-| `POST /projects/{id}/conversations/{cid}/outreach` | Append to an outreach thread |
-| `GET /projects/{id}/status` | Overview metrics for a time window |
-| `GET /projects/{id}/verify` | Config + billing health check |
+
+| Method & path                                      | Purpose                                               |
+| -------------------------------------------------- | ----------------------------------------------------- |
+| `GET /me`                                          | List orgs/projects you can act on                     |
+| `POST /orgs/{orgId}/projects`                      | Create a project (choose the widget identity mode)    |
+| `GET /projects/{id}`                               | Read a project (name, domains, metadata, doc)         |
+| `PATCH /projects/{id}`                             | Update name / domains / metadata                      |
+| `GET·PATCH /projects/{id}/doc`                     | Read/replace the product doc (plain text)             |
+| `GET·PATCH /projects/{id}/tag-tree`                | Read/replace the tag tree (≤3 levels deep)            |
+| `GET·PATCH /projects/{id}/attention-list`          | Read/replace the attention list (≤5)                  |
+| `GET·PATCH /projects/{id}/identity`                | Read/change the widget identity (mode + founder name) |
+| `GET·POST·DELETE /projects/{id}/keys`              | List / mint / revoke widget keys (`pk_`)              |
+| `GET·POST /projects/{id}/topics`                   | List / create topics                                  |
+| `PATCH·DELETE /projects/{id}/topics/{topicId}`     | Update / delete a topic                               |
+| `GET·POST /projects/{id}/touchpoints`              | List / create touchpoints                             |
+| `PATCH·DELETE /projects/{id}/touchpoints/{tpId}`   | Update / delete a touchpoint                          |
+| `GET /projects/{id}/conversations`                 | Search summarized conversations                       |
+| `GET /projects/{id}/users`                         | List end-users (outreach targets)                     |
+| `POST /projects/{id}/outreach`                     | Start an outreach conversation with a user            |
+| `POST /projects/{id}/conversations/{cid}/outreach` | Append to an outreach thread                          |
+| `GET /projects/{id}/status`                        | Overview metrics for a time window                    |
+| `GET /projects/{id}/verify`                        | Config + billing health check                         |
+
 
 ---
 
+
+
 ## Identity
 
-### `GET /me`
+
+
+
 
 Your first call after login. Returns the orgs and projects you can act on.
 
@@ -96,6 +108,8 @@ Create the project yourself before any project-scoped call (next).
 
 ---
 
+
+
 ## Create a project
 
 Your first setup step. Pick the **widget identity mode** *with the user*, then
@@ -106,17 +120,19 @@ project this returns.
 
 Create a project under an org you own (`orgId` comes from `GET /me`).
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `name` | string | **Required.** The project / app name; also the name the widget uses for the product. |
-| `mode` | `brand` \| `founder` | Widget identity — who the AI speaks *as* (see below). Default `brand`. |
-| `founderName` | string | **Required when `mode` is `founder`** — the name the AI presents itself as. Ignored otherwise. |
-| `doc` | string | Optional product doc (plain text; same content as `PATCH /projects/{id}/doc`). Grounds every conversation — worth seeding now, and editable later. |
+
+| Field         | Type                | Notes                                                                                                                                              |
+| ------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | string              | **Required.** The project / app name; also the name the widget uses for the product.                                                               |
+| `mode`        | `brand` | `founder` | Widget identity — who the AI speaks *as* (see below). Defaults to `founder` when omitted (so `founderName` is then required); an unknown value is rejected. |
+| `founderName` | string              | **Required when** `mode` **is** `founder` — the name the AI presents itself as. Ignored otherwise.                                                 |
+| `doc`         | string              | Optional product doc (plain text; same content as `PATCH /projects/{id}/doc`). Grounds every conversation — worth seeding now, and editable later. |
+
 
 **Choosing the mode — ask the user which voice fits their product:**
 
-- **`brand`** (default) — the widget talks as an **AI feedback assistant for the product team** ("I'm the AI assistant for _App_; the team reads every chat"). Neutral and safe for any product; needs only `name`. Pick this when there's no single public founder or the team prefers a product voice.
-- **`founder`** — the widget talks as the **founder's AI stand-in** ("I'm _Alice_'s AI"). Warmer and more personal, so users feel they're talking almost directly to the founder — which tends to draw more candid feedback. Requires `founderName`. Pick this for founder-led / early-stage products.
+- `founder` — the widget talks as the **founder's AI stand-in** ("I'm *Alice*'s AI"). Warmer and more personal, so users feel they're talking almost directly to the founder — which tends to draw more candid feedback. Requires `founderName`. Pick this for founder-led / early-stage products.
+- `brand` — the widget talks as an **AI feedback assistant for the product team** ("I'm the AI assistant for *App*; the team reads every chat"). Neutral and safe for any product; needs only `name`. Pick this when there's no single public founder or the team prefers a product voice.
 
 > **Images aren't set here.** Every project starts with a **default avatar**, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Custom logo / bot avatar and accent color aren't available through the API yet (it's an image upload); the user sets those in the **Dashboard**, on the **Engage** page's **“Meet users as:”** card.
 
@@ -134,7 +150,11 @@ call below.
 
 ---
 
+
+
 ## Project & basic config
+
+
 
 ### `GET /projects/{id}`
 
@@ -158,6 +178,8 @@ set them through their dedicated endpoints below.
 ```bash
 founderping request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.example.com"]}'
 ```
+
+
 
 ### `GET·PATCH /projects/{id}/doc`
 
@@ -208,10 +230,12 @@ creation (see *Create a project*), editable any time. `GET` returns the stored
 identity; `PATCH` changes it and **regenerates the self-introductions** from the
 resulting names, so the openers never drift from the name the AI presents.
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `mode` | `brand` \| `founder` | Switch the voice. Omit to keep the current mode. |
-| `founderName` | string | The name the AI speaks as in **founder** mode. Required whenever the resulting mode is `founder`. |
+
+| Field         | Type                | Notes                                                                                             |
+| ------------- | ------------------- | ------------------------------------------------------------------------------------------------- |
+| `mode`        | `brand` | `founder` | Switch the voice. Omit to keep the current mode.                                                  |
+| `founderName` | string              | The name the AI speaks as in **founder** mode. Required whenever the resulting mode is `founder`. |
+
 
 Brand mode speaks as the **product**, so its name always tracks the project name
 — change that with `PATCH /projects/{id}` (`name`), not here. An empty body just
@@ -227,6 +251,8 @@ Returns `{ "identity": { "mode", "founder": { "display_name", "introductions" },
 
 ---
 
+
+
 ## Widget keys (`pk_`)
 
 Publishable keys embedded in front-end code — safe to expose, unlike your access
@@ -240,6 +266,8 @@ founderping request DELETE "/projects/PROJECT_ID/keys?key=pk_live_xxx"      # �
 
 ---
 
+
+
 ## Topics
 
 A **topic** is one thing you want to learn from users.
@@ -247,26 +275,30 @@ A **topic** is one thing you want to learn from users.
 **Fields you can send** (create/patch). Anything else is rejected with
 `invalid_request`:
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `name` | string | Required on create. Display name (≤ 80 chars). |
-| `type` | `reactive` \| `proactive` | Required on create. `reactive` = waits for the user; `proactive` = the AI opens. |
-| `hint` | object | The design brief — **exactly these four keys**, all optional strings (≤ 4,000 chars each): `context`, `goal`, `requirements`, `plan`. Unknown keys are rejected. See below. |
-| `openings` | string[] | Opener lines (≤ 500 chars each); the AI uses one per conversation. Blank entries are dropped; **max 10**. |
-| `status` | `active` \| `archived` | Patch only. |
-| `enabled` | boolean | Whether the topic can fire. |
-| `direct_link_enabled` | boolean | Turns on the shareable direct link. |
-| `metadata` | object | Free-form extras, shallow-merged into the row's metadata. |
 
-**The `hint` brief** is not a free sentence — it's a structured object with four
+| Field                 | Type                     | Notes                                                                                                                                                                       |
+| --------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | string                   | Required on create. Display name (≤ 80 chars).                                                                                                                              |
+| `type`                | `reactive` | `proactive` | Required on create. `reactive` = waits for the user; `proactive` = the AI opens.                                                                                            |
+| `hint`                | object                   | The design brief — **exactly these four keys**, all optional strings (≤ 4,000 chars each): `context`, `goal`, `requirements`, `plan`. Unknown keys are rejected. See below. |
+| `openings`            | string[]                 | Opener lines (≤ 500 chars each); the AI uses one per conversation. Blank entries are dropped; **max 10**.                                                                   |
+| `status`              | `active` | `archived`    | Patch only.                                                                                                                                                                 |
+| `enabled`             | boolean                  | Whether the topic can fire.                                                                                                                                                 |
+| `direct_link_enabled` | boolean                  | Turns on the shareable direct link.                                                                                                                                         |
+| `metadata`            | object                   | Free-form extras, shallow-merged into the row's metadata.                                                                                                                   |
+
+
+**The** `hint` **brief** is not a free sentence — it's a structured object with four
 fixed sections:
 
-| Key | What goes here |
-| --- | --- |
-| `context` | The product moment / situation the topic stays grounded in. |
-| `goal` | What you want to learn from the user. |
-| `requirements` | Constraints or must-dos for the conversation. |
-| `plan` | The interview path / follow-up sequence to prioritize. |
+
+| Key            | What goes here                                              |
+| -------------- | ----------------------------------------------------------- |
+| `context`      | The product moment / situation the topic stays grounded in. |
+| `goal`         | What you want to learn from the user.                       |
+| `requirements` | Constraints or must-dos for the conversation.               |
+| `plan`         | The interview path / follow-up sequence to prioritize.      |
+
 
 Reactive topics really only use `requirements` (the rest stays open-ended);
 proactive topics use all four.
@@ -296,6 +328,8 @@ founderping request POST /projects/PROJECT_ID/topics @topic.json
 }
 ```
 
+
+
 ### `PATCH·DELETE /projects/{id}/topics/{topicId}`
 
 Patch any subset of the fields in the table above (at least one required).
@@ -314,6 +348,8 @@ founderping request PATCH /projects/PROJECT_ID/topics/TOPIC_ID '{"direct_link_en
 
 ---
 
+
+
 ## Touchpoints
 
 A **touchpoint** is where/when topics are surfaced in your product. Rows are
@@ -321,29 +357,35 @@ A **touchpoint** is where/when topics are surfaced in your product. Rows are
 
 **Top-level fields:**
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `name` | string | Required on create. A slug: `^[_a-z0-9][a-z0-9_-]*$`, ≤48 chars, unique per project. |
-| `config` | object | The behaviour below. Unknown keys are rejected. |
-| `status` | `enabled` \| `disabled` | Patch only. |
 
-**`config` fields** (all optional; anything else → `invalid_request`):
+| Field    | Type                   | Notes                                                                                |
+| -------- | ---------------------- | ------------------------------------------------------------------------------------ |
+| `name`   | string                 | Required on create. A slug: `^[_a-z0-9][a-z0-9_-]*$`, ≤48 chars, unique per project. |
+| `config` | object                 | The behaviour below. Unknown keys are rejected.                                      |
+| `status` | `enabled` | `disabled` | Patch only.                                                                          |
 
-| Key | Type | Notes |
-| --- | --- | --- |
-| `mode` | `reactive` \| `proactive` | Must match the `type` of the topics bound here (enforced server-side). |
-| `force_show` | boolean | Bypass the normal show/skip heuristics. |
-| `probability` | number `0`–`1` | Mount-time sampling rate — the touchpoint only fires if a per-mount roll passes. Omitted = always fire. |
-| `y_position` | number `0`–`1` | Vertical placement of the widget button, as a fraction of viewport height (0 = top). |
-| `topics` | array | Topic **bindings** — which topics this touchpoint can surface (see below). |
 
-**Each `topics[]` binding:**
+`config` **fields** (all optional; anything else → `invalid_request`):
 
-| Key | Type | Notes |
-| --- | --- | --- |
-| `topic_id` | string | Required. The topic to surface. |
-| `weight` | number ≥ 0 | Relative pick weight when several topics compete. |
-| `conditions` | array | Gates on when the topic may fire. Each item needs a `type` of `time_range`, `weekdays`, or `cooldown`; its other params are passed through as-is. |
+
+| Key           | Type                     | Notes                                                                                                   |
+| ------------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `mode`        | `reactive` | `proactive` | Must match the `type` of the topics bound here (enforced server-side).                                  |
+| `force_show`  | boolean                  | Bypass the normal show/skip heuristics.                                                                 |
+| `probability` | number `0`–`1`           | Mount-time sampling rate — the touchpoint only fires if a per-mount roll passes. Omitted = always fire. |
+| `y_position`  | number `0`–`1`           | Vertical placement of the widget button, as a fraction of viewport height (0 = top).                    |
+| `topics`      | array                    | Topic **bindings** — which topics this touchpoint can surface (see below).                              |
+
+
+**Each** `topics[]` **binding:**
+
+
+| Key          | Type       | Notes                                                                                                                                             |
+| ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `topic_id`   | string     | Required. The topic to surface.                                                                                                                   |
+| `weight`     | number ≥ 0 | Relative pick weight when several topics compete.                                                                                                 |
+| `conditions` | array      | Gates on when the topic may fire. Each item needs a `type` of `time_range`, `weekdays`, or `cooldown`; its other params are passed through as-is. |
+
 
 ```bash
 founderping request GET    /projects/PROJECT_ID/touchpoints
@@ -367,20 +409,26 @@ founderping request DELETE /projects/PROJECT_ID/touchpoints/TP_ID
 
 ---
 
+
+
 ## Conversations
+
+
 
 ### `GET /projects/{id}/conversations`
 
 Search summarized conversations (same data as the dashboard list). All params
 optional.
 
-| Param | Meaning |
-| --- | --- |
-| `from`, `to` | ISO date bounds |
-| `q` | full-text search |
+
+| Param                                            | Meaning                           |
+| ------------------------------------------------ | --------------------------------- |
+| `from`, `to`                                     | ISO date bounds                   |
+| `q`                                              | full-text search                  |
 | `sentiment`, `quality`, `status`, `topic`, `tag` | CSV filters (`topic` = topic ids) |
-| `limit` | default `100` |
-| `offset` | default `0` |
+| `limit`                                          | default `100`                     |
+| `offset`                                         | default `0`                       |
+
 
 ```bash
 founderping request GET "/projects/PROJECT_ID/conversations?status=summarized&limit=20"
@@ -388,7 +436,11 @@ founderping request GET "/projects/PROJECT_ID/conversations?status=summarized&li
 
 ---
 
+
+
 ## Users & outreach
+
+
 
 ### `GET /projects/{id}/users`
 
@@ -398,6 +450,8 @@ The pool of end-users you can reach out to. Params: `page` (1), `page_size` (12)
 ```bash
 founderping request GET "/projects/PROJECT_ID/users?page=1&page_size=20"
 ```
+
+
 
 ### `POST /projects/{id}/outreach`
 
@@ -422,7 +476,11 @@ founderping request POST /projects/PROJECT_ID/conversations/CONV_ID/outreach '{"
 
 ---
 
+
+
 ## Status & verify
+
+
 
 ### `GET /projects/{id}/status`
 
@@ -433,7 +491,13 @@ count; default `7d`).
 founderping request GET "/projects/PROJECT_ID/status?window=7d"
 ```
 
-→ `{ window_days, depth, users, top_tags, notifications }`.
+→ `{ window_days, depth, users, top_tags, notifications, reminders }`.
+
+`reminders` is a list of `{ code, message }` setup nudges worth relaying to the
+user. Currently the only one is `avatar_missing` — the project still rides the
+default avatar, so the widget reaches users with a generic image; prompt them to
+upload a founder photo / brand logo in the Dashboard (**Engage → "Meet users
+as"**), since avatar upload isn't available over the API. Empty once handled.
 
 ### `GET /projects/{id}/verify`
 
@@ -457,6 +521,8 @@ founderping request GET /projects/PROJECT_ID/verify
 
 ---
 
+
+
 ## Auth (device flow) — handled by the CLI
 
 You normally never call these; `founderping login` and the browser approval page do.
@@ -465,3 +531,4 @@ Documented for completeness.
 - `POST /auth/device/start` → `{ device_code, user_code, verification_uri, verification_uri_complete, interval, expires_in }`. Unauthenticated.
 - `POST /auth/device/token` body `{ device_code }` → `{ status: "pending", interval }` while waiting, or `{ access_key, token_type: "uak", user_id }` once approved. Unauthenticated; the key is returned exactly once.
 - `POST /auth/device/approve` body `{ user_code }` → `{ approved: true }`. Requires a logged-in browser session; also provisions a default **organization** (no project — create one with *Create a project*).
+

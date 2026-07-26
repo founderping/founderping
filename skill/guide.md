@@ -4,7 +4,7 @@
 
 FounderPing is an **AI-powered user-feedback platform for product teams**. It helps you hear from the people who use your product—not through long surveys or static forms, but through **short, natural conversations** (voice or text) that an AI leads on your behalf. Each chat is turned into **structured, searchable insight**—what was said, how the user felt, what matters—so you can prioritize and act without manually reading every submission.
 
-Think of FounderPing as a **virtual team working for you**: you set the goals and rules; the team talks to users, brings back signal, and organizes it in one place.
+FounderPing chats with users **inside your app**—as a **Founder** or as a **Team Feedback Assistant**—and **summarizes the feedback** you collect.
 
 ### Problems it addresses
 
@@ -28,6 +28,11 @@ Most teams don’t have one feedback problem—they have **a patchwork of channe
 - **Synthesis doesn’t scale.** Tagging, prioritizing, and tying feedback to a user stays manual, so backlogs outgrow insight.
 - **Rolling your own feedback UX is costly.** Every new question, audience, or trigger still means more frontend work and redeploys.
 
+**Timing and trust work against you**
+
+- **After the fact, the moment is gone.** Most feedback channels ask days or weeks later—users have already forgotten the scene, so response rates stay low and answers stay thin. FounderPing captures feedback **in the moment**, and **proactive Topics** raise the right question at the right trigger while the experience is still fresh—so more people reply, with more detail.
+- **Cold outreach keeps users at arm's length.** Star ratings and anonymous surveys feel institutional; people hold back. FounderPing lets you show up inside your app as a **Founder** (your AI stand-in) or a **Team Feedback Assistant**—a warmer, more personal voice that closes the distance and earns more candid feedback.
+
 FounderPing is built to replace that loop: **reach users in the product (and beyond), let AI dig deeper in the moment, and put summarized, tagged signal in one Dashboard**—so you’re not guessing from stars, silence, or scattered threads.
 
 ---
@@ -36,7 +41,7 @@ FounderPing is built to replace that loop: **reach users in the product (and bey
 
 This section walks the full lifecycle from a developer’s perspective: from signing up, through configuring what to ask, to reading and acting on what comes back. Each step links to its deep-dive section.
 
-> **Two equivalent ways to operate FounderPing.** Everything below can be done either in the **Dashboard** (point-and-click) or through the **`founderping` CLI / REST API** (`/api/v1`) that AI coding agents drive — projects, the product doc, topics, touchpoints, widget keys, allowed domains, outreach, and status are all reachable both ways. Pick whichever fits the moment; where it matters, this guide notes both. (For the full CLI/API surface, see the companion **API reference**, `api.md`.)
+> **Two equivalent ways to operate FounderPing.** Everything below can be done either in the **Dashboard** (point-and-click) or through the **`founderping` CLI / REST API** (`/api/v1`) that AI coding agents drive — projects, the product doc, topics, touchpoints, widget keys, allowed domains, outreach, and status are all reachable both ways. Pick whichever fits the moment; where it matters, this guide notes both. 
 
 ### Fastest setup — one prompt with your coding agent
 
@@ -44,18 +49,17 @@ If you use **Cursor, Claude Code, Codex, Gemini CLI**, or a similar assistant, y
 
 1. Open your product's repo in the agent.
 2. Paste a setup prompt—for example: *"Download the FounderPing skill from https://github.com/founderping/founderping, follow it, and help me set up FounderPing in this project."*
-3. The agent pulls the **FounderPing skill** (this guide, the API reference, and setup scripts), walks you through login, creates your project (picking a widget voice with you), co-designs Topics and Touchpoints with you, and drops the widget install script plus `mount()` calls into your codebase.
+3. The agent pulls the **FounderPing skill**—this guide, the `founderping` CLI, the complete API documentation, and setup scripts—walks you through login, creates your project (picking a widget voice with you), co-designs Topics and Touchpoints with you, and drops the widget install script plus `mount()` calls into your codebase.
 
 Prefer the UI? **Sign up free** and follow the onboarding tutorial in the Dashboard instead—the same end state, step by step.
 
 ### Step 0 — Set up the workspace
 
-1. **Create your Project — and pick its voice.** The **Organization** (your billing entity) is created for you on signup and `founderping login`; a **Project** is one product/app you want feedback on, and you create it explicitly — in the Dashboard, or with `POST /orgs/{orgId}/projects` (see `api.md`). Creating one carries a choice worth making *with* the user: the widget's **identity mode**, i.e. who the AI speaks *as*.
-  - **Brand** (default) — the widget talks as an AI feedback assistant for the product team. Neutral, fits any product, needs only the app name.
-  - **Founder** — the widget talks as the founder's AI stand-in (“I'm Alice's AI”). More personal, so users feel they're speaking almost directly with the founder, which tends to draw more candid feedback; it needs the founder's name.
-  Ask which fits before creating, and default to Brand if they're unsure — it's not permanent, so they can switch the voice (or rename the founder) later from the Dashboard's **Engage → “Meet users as:”** card or via `PATCH /projects/{id}/identity`. Either way the widget opens with a **default avatar**: uploading a custom logo / bot avatar (and accent color) isn't available through the CLI/API yet, so if they want to brand it, send them to the Dashboard — the **Engage** page, in the **“Meet users as:”** card (see §5.6).
+1. **Create your Project — and pick its voice.** The **Organization** (your billing entity) is created for you when you sign up; a **Project** is one product/app you want feedback on, and you create it from the Dashboard. Creating one carries a choice worth making *with* the user: the widget's **identity mode**, i.e. who the AI speaks *as*.
+  - **Founder** (default) — the widget talks as the founder's AI stand-in (“I'm Alice's AI”). More personal, so users feel they're speaking almost directly with the founder, which tends to draw more candid feedback; it needs the founder's name.
+  - **Brand** — the widget talks as a **Team Feedback Assistant** for the product team. Neutral, fits any product, needs only the app name.
+  Ask which fits before creating, and default to Founder if they're unsure — it's not permanent, so they can switch the voice (or rename the founder) later from the Dashboard's **Engage → “Meet users as:”** card. Either way the widget starts with a **default avatar**; uploading a custom logo / bot avatar (and accent color) is only available in the Dashboard (**Engage → “Meet users as:”**, see §5.6)—for **both** Brand and Founder mode, the CLI doesn't support avatar upload yet.
 2. **Write your product context.** Drop in a free-form description of your product—what it does, who uses it, key terms. FounderPing injects this into every conversation so the AI sounds informed instead of generic. You write it in **Settings → Product Description**.
-3. **Define your taxonomy.** Set up the **Tag Tree** (how feedback should be labeled) and the **Attention List** (topics that should auto-flag a conversation, e.g. churn, billing, security). This is what turns raw chats into filterable, prioritized signal later (see §5.4–5.5).
 
 ### Step 1 — Decide what to ask (Topics)
 
@@ -63,7 +67,7 @@ Prefer the UI? **Sign up free** and follow the onboarding tutorial in the Dashbo
   - **Reactive Topic — the always-on helper.** Exactly **one per project**. Once enabled, it sits behind a small sticky side button in your product, so users can open it whenever they want to say something. It’s a general “tell us anything” helper, not a targeted question.
   - **Proactive Topics — targeted, pop-up questions.** **Zero to many per project**. Each one focuses on a single question or a specific class of issue, and the AI raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
 
-Both flavors are configured through the same two core concepts, produced and edited either right on the page or through the CLI / API:
+Both flavors are configured through the same two core concepts, edited in the Dashboard:
 
 - **Hint** — context for the AI, *not* shown to the user. It’s injected into the AI’s context during the chat so the AI understands the background and what you’re trying to learn, and drives the conversation accordingly.
 - **Opening** — the first line(s) the user sees when a chat starts. FounderPing assembles it at runtime from **two pieces**, each picked at random so the same person doesn't always get the same hello:
@@ -92,9 +96,9 @@ There are two ways to put a Topic in front of users. Most projects use both.
 This is the main path: an embedded widget that brings your Topics to users right inside your app.
 
 1. **Touchpoints — naming the moments.** A **Touchpoint** is a named hook you place in your code at a meaningful moment, e.g. `founderping.mount("post_checkout")`. It’s just a label for “something interesting happened here”; *what* should be asked there is decided later in the Dashboard, not in your code.
-2. **Bind Topics to Touchpoints (with Conditions).** In the Dashboard (or via the API) you bind one or more Topics to each Touchpoint, so firing that moment can start the right conversation. Bindings can carry **Conditions** that gate when they’re allowed to fire—time windows, weekdays, and per-user cooldowns (see *Appendix A — Touchpoint Condition types* for the full list).
+2. **Bind Topics to Touchpoints (with Conditions).** In the Dashboard you bind one or more Topics to each Touchpoint, so firing that moment can start the right conversation. Bindings can carry **Conditions** that gate when they’re allowed to fire—time windows, weekdays, and per-user cooldowns (see *Appendix A — Touchpoint Condition types* for the full list).
   The **Reactive Topic** doesn’t need a Touchpoint—when enabled it always shows as the sticky “tell us anything” button. **Proactive Topics** are the ones you bind to Touchpoints so they pop up at the right time.
-3. **Integrate the widget once.** Add the one-line widget script to your product and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard (or the API)—no further frontend changes per question. (Concrete snippets, the JavaScript API, and the runtime mechanics—coalesce, Conditions, and Guards—are covered in §4 *Developer integration*.)
+3. **Integrate the widget once.** Add the one-line widget script to your product and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard—no further frontend changes per question. (Concrete snippets, the widget JavaScript API, and the runtime mechanics—coalesce, Conditions, and Guards—are covered in §4 *Developer integration*.)
 
 **Path B — Direct Links (outside your product)**
 
@@ -109,6 +113,7 @@ A **Direct Link** is a shareable URL (and QR code) that opens a single Topic in 
 
 1. **Summarized into Points.** After a conversation ends, FounderPing extracts atomic **Points**: a one-line gist, a short summary, sentiment, tags from your Tag Tree, and an attention flag (see §5.9).
 2. **Organized for you.** Points are labeled and flagged so urgent or on-watch items surface instead of getting buried.
+3. **Tune your taxonomy.** A sensible default **Tag Tree** and **Attention List** ship out of the box, so labeling and flagging work from the first conversation. Once feedback is flowing, reshape them in **Insights → Tags & attention** to match your product—how feedback should be labeled, and which signals should auto-flag a conversation (e.g. churn, billing, security). See §5.4–5.5.
 
 ### Step 5 — Read, prioritize, and act
 
@@ -122,7 +127,7 @@ A **Direct Link** is a shareable URL (and QR code) that opens a single Topic in 
 
 ---
 
-## 3. Designing your feedback program
+## 3. Help designing the feedback program for your developer(For AI assistant reading this)
 
 This chapter is written mainly for you, the AI assistant a developer has brought in to help them get more out of FounderPing — though it’s really about *their* product, so a developer reading along will get just as much from it. (“you” here means the assistant; elsewhere in this guide it means the developer.) Treat it as background for a role you can play, not a procedure you have to run: most of the time the developer arrives with a concrete question, and helping with that comes first. What follows is how, around that, you can also help them shape a feedback program worth having.
 
@@ -163,7 +168,7 @@ Follow their lead on how far to go on any given thread; Your default stance is *
 
 ---
 
-## 4. Developer integration
+## 4. Integration
 
 One principle runs through all of it: **your code only names moments—the Dashboard decides what to ask and when.** You integrate once; from then on you add, retarget, or retire questions entirely from the Dashboard, with no frontend changes or redeploys.
 
@@ -171,7 +176,7 @@ One principle runs through all of it: **your code only names moments—the Dashb
 
 ### 4.1 The install script
 
-Every integration starts with one `<script>` snippet. Copy it verbatim from the Dashboard (**Engage → Web Widget**)—it already has your project key filled in. (Working from the CLI/API instead? Mint a key with `POST /projects/{id}/keys` and drop it into the `data-project-key` slot yourself.)
+Every integration starts with one `<script>` snippet. Copy it verbatim from the Dashboard (**Engage → Web Widget**)—it already has your project key filled in.
 
 ```html
 <script>!function(u,d){var w=window,e=document;if(w.founderping)return;var v,p=new Promise(r=>v=r);w.__sr=v;w.founderping=new Proxy({},{get:(_,m)=>function(){var a=w.__sa,g=[...arguments];return a?a[m].apply(a,g):p.then(()=>w.__sa[m].apply(w.__sa,g))}});var s=e.createElement("script");s.async=1;s.src=u;if(d)for(var k in d)s.setAttribute(k,d[k]);e.head.appendChild(s)}("https://founderping.app/founderping-widget.umd.js",{"data-project-key":"pk_your_project_key"});</script>
@@ -310,23 +315,23 @@ A reference for the concepts and settings that come up most once you're past the
 
 ### 5.1 Project key
 
-The **project key** (`pk_…`) is the public id that ties an embed to your project—it's the `data-project-key` in the install script (§4.1). It's a *publishable* key, meant to sit in client-side HTML, so there's nothing secret to leak: abuse is held off by the allowed-domains check below (plus a one-time human check and your credit balance), not by keeping the key hidden. Every project starts with one default key; you can also add or remove extra named keys—say, one per site or environment—from your project's settings (or via the API).
+The **project key** (`pk_…`) is the public id that ties an embed to your project—it's the `data-project-key` in the install script (§4.1). It's a *publishable* key, meant to sit in client-side HTML, so there's nothing secret to leak: abuse is held off by the allowed-domains check below (plus a one-time human check and your credit balance), not by keeping the key hidden. Every project starts with one default key; you can also add or remove extra named keys—say, one per site or environment—from **Project Settings** in the Dashboard.
 
 ### 5.2 Allowed domains
 
-For the Web Widget, FounderPing only answers requests coming from the **domains you allowlist** (the visitor's browser reports its page origin and the server checks it). List every site that embeds the Widget under **Project Settings** (or via the API); `*.example.com` covers subdomains and `localhost` is allowed while you develop. **An empty allowlist blocks the Widget**—it's the most common reason a freshly-installed Widget never appears, so fill it in before testing on a live domain. Direct Links don't need an entry here: they're served from FounderPing's own hosted page.
+For the Web Widget, FounderPing only answers requests coming from the **domains you allowlist** (the visitor's browser reports its page origin and the server checks it). List every site that embeds the Widget under **Project Settings** in the Dashboard; `*.example.com` covers subdomains and `localhost` is allowed while you develop. **An empty allowlist blocks the Widget**—it's the most common reason a freshly-installed Widget never appears, so fill it in before testing on a live domain. Direct Links don't need an entry here: they're served from FounderPing's own hosted page.
 
 ### 5.3 Documentation (your product context)
 
-This is the plain-language description of your product that FounderPing feeds into **every** conversation, so the AI sounds like it already knows your app instead of asking from scratch. You write it in **Settings → Product Description** (or via the API): what the product does, who uses it, the core flow, the words your users use, and the known rough edges. It's the single highest-leverage thing you can set—thin context yields thin, generic interviews—so the Dashboard nudges you whenever it's too short. You don't have to draft it by hand: the **“Ask your AI”** button hands you a ready-made prompt to paste into your coding agent (Claude Code, Codex, Cursor…), which reads your repo and writes a first version for you to refine.
+This is the plain-language description of your product that FounderPing feeds into **every** conversation, so the AI sounds like it already knows your app instead of asking from scratch. You write it in **Settings → Product Description**: what the product does, who uses it, the core flow, the words your users use, and the known rough edges. It's the single highest-leverage thing you can set—thin context yields thin, generic interviews—so the Dashboard nudges you whenever it's too short. You don't have to draft it by hand: the **“Ask your AI”** button hands you a ready-made prompt to paste into your coding agent (Claude Code, Codex, Cursor…), which reads your repo and writes a first version for you to refine.
 
 ### 5.4 Tag Tree
 
-The **Tag Tree** is your feedback taxonomy. After each chat FounderPing attaches short tags from this tree to every **Point** (one atomic thing a user said), so you can later filter and count—“show me every *pricing* complaint.” The tree is hierarchical (up to three levels, broad at the top, finer below); FounderPing walks each branch top-down and attaches every tag that still fits, and a single Point can carry several. A sensible default tree ships out of the box so tagging works immediately—reshape it around your own product for sharper signal. Edit it in **Insights → Tags & attention** (or via the API).
+The **Tag Tree** is your feedback taxonomy. After each chat FounderPing attaches short tags from this tree to every **Point** (one atomic thing a user said), so you can later filter and count—“show me every *pricing* complaint.” The tree is hierarchical (up to three levels, broad at the top, finer below); FounderPing walks each branch top-down and attaches every tag that still fits, and a single Point can carry several. A sensible default tree ships out of the box so tagging works immediately—reshape it around your own product for sharper signal. Edit it in **Insights → Tags & attention**.
 
 ### 5.5 Attention List
 
-The **Attention List** is a short set of high-value signals you want caught the instant they appear—churn risk, security worries, pricing objections, or a launch-specific theme. When a conversation matches one, FounderPing stamps it with an **attention flag** so it rises to the top instead of getting buried. Keep it to a handful (up to five) of genuinely important items: it's a spotlight, not a second Tag Tree. Also set in **Insights → Tags & attention** (or via the API).
+The **Attention List** is a short set of high-value signals you want caught the instant they appear—churn risk, security worries, pricing objections, or a launch-specific theme. When a conversation matches one, FounderPing stamps it with an **attention flag** so it rises to the top instead of getting buried. Keep it to a handful (up to five) of genuinely important items: it's a spotlight, not a second Tag Tree. Set it in **Insights → Tags & attention**.
 
 ### 5.6 Widget branding — match the Widget to your brand
 
@@ -355,11 +360,7 @@ When a conversation ends, FounderPing doesn't just file the transcript—it brea
 
 Splitting chats into Points—rather than one blob per conversation—is what makes feedback *countable*: a single five-minute chat can yield several Points, each tagged, weighted, and filterable on its own. You browse and slice them in the **Conversations** and **Users** views.
 
-### 5.10 Team & roles
-
-Your account is organized as **Organizations → Projects**: an Organization owns billing and teammates, and its Projects sit beneath it. Invite people from the Organization's member settings. There are two roles—**owners**, who manage members, billing, and settings, and **members**, who work inside the Projects—and everyone in an org can collaborate across that org's Projects.
-
-### 5.11 Billing & credits
+### 5.10 Billing & credits
 
 *Placeholder — pricing and credit mechanics are still being finalized.* This section will cover how usage is metered, how credits are spent per conversation (less for thin “hi-and-gone” chats, more for rich ones), and what happens when a project runs low. We'll fill it in once the model is locked.
 
