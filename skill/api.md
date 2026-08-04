@@ -42,6 +42,12 @@ a `status` / list response mean "no activity yet", not "bad id". If you get a
 `not_found`, re-check the id against `GET /me`.
 - Basic config (product doc, tag tree, attention list) is **read + modify only** —
 every project is created with these, so there is no create/delete for them.
+- Widget branding — the bot avatar, the accent color, and the **light / dark
+theme** — is **Dashboard-only** and has no endpoint here. It's picked against a
+live preview, so it's a step to hand back to the user rather than script: send
+them to the **Engage** page's **“Meet users as:”** card. (The theme matches the
+site the widget is embedded in; it's a per-project choice, not the visitor's
+system setting.)
 - CSV query params take comma-separated values, e.g. `?status=summarized,archived`.
 
 
@@ -134,7 +140,7 @@ Create a project under an org you own (`orgId` comes from `GET /me`).
 - `founder` — the widget talks as the **founder's AI stand-in** ("I'm *Alice*'s AI"). Warmer and more personal, so users feel they're talking almost directly to the founder — which tends to draw more candid feedback. Requires `founderName`. Pick this for founder-led / early-stage products.
 - `brand` — the widget talks as an **AI feedback assistant for the product team** ("I'm the AI assistant for *App*; the team reads every chat"). Neutral and safe for any product; needs only `name`. Pick this when there's no single public founder or the team prefers a product voice.
 
-> **Images aren't set here.** Every project starts with a **default avatar**, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Custom logo / bot avatar and accent color aren't available through the API yet (it's an image upload); the user sets those in the **Dashboard**, on the **Engage** page's **“Meet users as:”** card.
+> **Looks aren't set here.** Every project starts with a **default avatar** and the **light** theme, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Avatar, accent color, and theme are Dashboard-only (see *Conventions*); the user sets them on the **Engage** page's **“Meet users as:”** card.
 
 ```bash
 founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"brand","doc":"# Acme\n\nAcme helps teams …"}'
