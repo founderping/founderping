@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Chromium's Android audio layer checks for MODIFY_AUDIO_SETTINGS *and*
+      RECORD_AUDIO together, and reports "no audio device will be available for
+      recording" if either is missing. So without this, a host app that declares
+      RECORD_AUDIO and holds it at runtime still gets a rejected getUserMedia,
+      with the only clue a `cr_media` line in logcat.
+
+      Declared here rather than left to you, unlike RECORD_AUDIO below, because
+      the two are not the same kind of thing. RECORD_AUDIO is a decision your
+      user makes and sees. This one is a normal permission — granted at install,
+      never prompted, not shown in the store listing — and it is a requirement of
+      the WebView we put in your app, not of your product. If you would still
+      rather not ship it, strip it with
+      `<uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"
+      tools:node="remove" />`, and voice input will not work.
+    -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!--
+      RECORD_AUDIO is deliberately NOT declared here. Voice input is optional,
+      and a library that forces a microphone permission onto every host app is
+      a library nobody wants. Declaring it is how you opt in; request it at
+      runtime too, or the mic button appears and cannot work.
+    -->
+
+</manifest>

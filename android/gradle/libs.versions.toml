@@ -1,0 +1,16 @@
+[versions]
+agp = "8.5.2"
+kotlin = "1.9.24"
+json = "20240303"
+junit = "4.13.2"
+
+[libraries]
+# The framework ships org.json, but unit tests run against the stub android.jar
+# where every method throws, so the real implementation has to be on the test
+# classpath.
+json = { module = "org.json:json", version.ref = "json" }
+junit = { module = "junit:junit", version.ref = "junit" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
