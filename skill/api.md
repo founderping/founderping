@@ -329,7 +329,9 @@ founderping request POST /projects/PROJECT_ID/topics @topic.json
     "requirements": "Keep it short and specific; don't lead the user.",
     "plan": "1. Ask how setup went. 2. Dig into any friction. 3. Thank them."
   },
-  "openings": ["Hey! Mind if I ask how setup went for you?"],
+  "openings": [
+    "Looks like you've just finished setting things up — got a minute? What you tell me here decides what I smooth out next.\n\nWhere did it slow you down the most?"
+  ],
   "metadata": { "enabled": true }
 }
 ```

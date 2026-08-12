@@ -71,17 +71,17 @@ Both flavors are configured through the same two core concepts, edited in the Da
 
 - **Hint** — context for the AI, *not* shown to the user. It’s injected into the AI’s context during the chat so the AI understands the background and what you’re trying to learn, and drives the conversation accordingly.
 - **Opening** — the first line(s) the user sees when a chat starts. FounderPing assembles it at runtime from **two pieces**, each picked at random so the same person doesn't always get the same hello:
-  - **Introduction** — project-level. Configured on **Engage → “Meet users as:”** (see §5.6): a few greeting / self-intro variants for the active identity mode (Founder or Brand). One variant is chosen each time a Topic fires.
-  - **Hook** — topic-level. The **Openings** you write per Topic: a few substantive candidates; one is chosen when that Topic fires. A strong hook is 1–2 short sentences (~40 words) with **clear purpose** (what you're hoping to learn, grounded in the Topic's goal/context) and **the actual opener** — for a Proactive Topic, a concrete first question that goes right to the point its Plan wants to explore; for the Reactive Topic, an open invitation to share whatever's on the user's mind. **Don't** put hi/hey/hello or a self-introduction in hooks; the Introduction already covers that beat.
+  - **Introduction** — project-level. Configured on **Engage → “Meet users as:”** (see §5.6): a few greeting / self-intro variants for the active identity mode (Founder or Brand). One variant is chosen each time a Topic fires. It covers exactly one beat — hello, and who's speaking — and deliberately asks nothing, so the Hook can do the asking without the widget asking twice.
+  - **Hook** — topic-level. The **Openings** you write per Topic: a few substantive candidates; one is chosen when that Topic fires. This is the piece that has to earn a reply, and it follows a specific structure worth getting right — see **§3.5**. **Don't** put hi/hey/hello or a self-introduction in a hook; the Introduction already covers that beat.
 
 The Hint is split into short, **orthogonal** fields — each one captures a *different* dimension of the conversation, so any given detail belongs in exactly one field (don’t restate the same thing across them). A **Proactive Topic** uses four:
 
 - **Context** — the *situation*: what the dialogue is about and where/when it happens (which screen, after which action or event, what kind of user), plus any helpful background. It sets the scene; the goal and the questions do **not** go here.
-- **Goal** — the *objective*: the one core thing you want to learn from the user. A single sharp goal beats a grab-bag of five.
+- **Goal** — the *objective*: what you want to learn from the user — one or two sharp things the developer cares about, not a grab-bag of five.
 - **Requirements** — the *guard-rails*: constraints and must-dos for how the AI behaves — tone, what it must cover, what to avoid, whether to ask for contact details, and so on.
-- **Plan** — the *flow*: a high-level path for how the conversation should move (the order of beats and the outcomes to aim for), not exact question wording.
+- **Plan** — the *flow*: what the conversation should *do* — the order of beats and how to move toward the Goal — not exact question wording.
 
-Keep every field tight — a sentence or two each (rough budget: ~30 words for Context, Goal, and Requirements, up to ~50 for Plan). The Hint is a quick brief the AI skims before talking, not an essay; padding it only buries the signal.
+Keep every field tight — a sentence or two each (rough budget: ~30 words for Context, Goal, and Requirements, up to ~50 for Plan). The Hint is a quick brief the AI skims before talking, not an essay; padding it only buries the signal. **§3.6** walks through how to write each field so the AI can act on it.
 
 A **Reactive Topic** is the open-ended “tell us anything” helper, so it uses just **one** of these — **Requirements**. With no fixed situation, single goal, or scripted flow to pin down, Context, Goal, and Plan are all dropped; only the guard-rails for how the AI should behave still apply.
 
@@ -165,6 +165,54 @@ Your job isn't to fire back one-liners when the developer asks a question — it
 **Hand back concrete artifacts.** Where you can, deliver the drafted Hint fields and Openings, the touchpoint name, the Dashboard conditions to set, and the code snippets — not a vague plan they still have to interpret. The developer should leave with something they can paste, configure, and ship.
 
 Follow their lead on how far to go on any given thread; Your default stance is **design partner**, not **FAQ bot**: connect the dots across product, copy, configuration, and code so a feedback idea becomes a working integration.
+
+### 3.5 Writing Openings that earn a reply
+
+The **Opening** is what the user reads — a few lines that decide whether they answer at all. It's easy to write one that is technically correct and collects nothing. This is the craft behind it — apply it whenever you draft an Opening, for the developer or alongside them. (The **Hint** — what the AI reads — has its own rules in **§3.6**.)
+
+**The Opening carries the whole funnel.** Everything downstream — the follow-up questions, the Points, the tags, the digest — happens only if the user answers the first message, and they decide that in a couple of seconds, before they've read a question. So an Opening isn't a label on the conversation; it's the conversion step, and it deserves more care than anything else in the Topic.
+
+The failure mode looks harmless: *"We'd love your feedback on your recent session. How would you rate it?"* Nothing in it is wrong, and it gets dismissed — it reads as broadcast, it never acknowledges that the user was in the middle of something, and it gives them no reason to spend the minute.
+
+**What earns a reply is three beats before the question:**
+
+1. **Acknowledge the moment.** Name what the user just did, concretely enough that they recognize it. This is what makes the message feel addressed to them instead of mailed to everyone; "thanks for using our product" is not this beat.
+2. **Ask for their time.** A short, low-pressure request they could genuinely decline. It costs one clause and hands control back to the user, which is exactly why they stay.
+3. **Say why it matters.** One honest sentence with two halves: their answer shapes what gets built next, *and* they end up with a product that fits them better. The second half is the one teams forget — a reason that benefits only you isn't a reason.
+
+Then a line break, and **exactly one concrete question**. A second question stacked onto the first mostly costs you the answer to both.
+
+With the Introduction in front of it, the whole opening a user sees reads like this — three bubbles, arriving in order:
+
+> Hi, I'm Ava, founder of SpeakEasy.
+>
+> I see you've completed the mock interview, do you have a minute to chat? I would genuinely love your opinion to make this better for you.
+>
+> So, how much do you feel this session helped improve your speaking fluency and confidence?
+
+Budget about 60 words for the hook (everything after the Introduction). All four beats have to fit, so none of them can be padded — each is one short clause or sentence.
+
+**The Reactive Topic drops the first two beats.** It's the always-on "tell us anything" button, so the user pressed it themselves: there's no moment to acknowledge (you don't know what they were doing) and nothing to ask permission for. Asking "do you have a minute?" of someone who just opened your feedback chat is pure friction. Keep it to why it matters plus an open invitation, under ~35 words:
+
+> Really glad you reached out — hearing it straight from you is what shapes what gets worked on next.
+>
+> So, what's on your mind?
+
+**Line breaks become separate bubbles.** Write an Opening the way you'd send two chat messages, because that's how it renders: every line break in an Opening starts a new bubble, so the beats land first and the question arrives on its own. Use plain newlines — no `<br>` — and no markdown: the chat renders text literally, so `**bold**` would show up as asterisks.
+
+### 3.6 Writing Hints the AI can act on
+
+The **Hint** is re-read before every turn of a live conversation to decide what to ask next and when to stop — write it so the AI can act on it, not just describe the topic. §2 Step 1 defines the four fields; below is how to write each one. Keep every field tight (~30 words, ~50 for Plan), orthogonal, and cut anything that doesn't help the AI decide.
+
+**Context — set the scene, nothing else.** This field is *where and when* the conversation happens: which screen, which user action or event triggered it, and any background that helps the AI recognize the moment. Name the screen and the action concretely — "after the user finishes the mock interview on the practice screen" beats "after a session." Context is also what the Opening's first beat is made of: if Context doesn't pin down what the user just did, the acknowledgement can't either, and the Opening loses the beat that does the most work. Don't put the learning goal here, don't script questions, and don't list behavioral guard-rails — those belong in Goal, Plan, and Requirements.
+
+**Goal — what you want to learn.** State what the developer wants to find out and cares about — the outcome of a good conversation, not the steps to run it. One or two sharp goals is fine; more than that usually means the Topic is doing too much and should be split. "Understand why users churn" is a Goal; "understand churn and whether they'd pay for premium" is two goals, still workable. A common mistake is writing Plan here instead — "ask about pricing, then dig into alternatives" belongs in Plan, not Goal.
+
+**Requirements — constraints, not wishes.** Put something here only if the AI behaving otherwise would be a bug: a subject it must never touch, a point it must cover before closing, whether to ask for contact details, a tone boundary that matters for this specific topic. "Be friendly" or "keep it conversational" aren't Requirements — the AI already knows how to talk. If removing a line wouldn't change how you'd judge a transcript, it doesn't belong here. In many cases this field can stay empty.
+
+**Plan — what to do.** Sketch how the conversation should move: the order of beats, what to explore first, when to go deeper or close — actions and directions, not exact question wording. The Opening's first question is drawn from the Plan's opening beat, so make that beat a concrete starting move toward the Goal. Goal says *what you want to know*; Plan says *how to get there*. If both fields say the same thing in different words ("learn why they churn" / "find out why they left"), the AI gets no guidance on what to actually do next.
+
+**Reactive Topics use only Requirements.** The always-on helper has no fixed moment, single goal, or scripted flow to pin down — Context, Goal, and Plan are all dropped. Requirements still apply: how the AI should behave when the user could say anything.
 
 ---
 
