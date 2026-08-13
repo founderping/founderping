@@ -148,7 +148,7 @@ founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"founder",
 ```
 
 → `201` with the created project (`{ id, name, organization_id, metadata, … }`).
-It already has a **Default Project Key**, a starter reactive topic plus example
+It already has a **Default Project Key**, the default reactive topic plus example
 proactive topics, and the widget introduction seeded for the mode you chose —
 all editable afterward (switch the voice or rename the founder later via
 `PATCH /projects/{id}/identity`). Use the returned `id` for every project-scoped
@@ -363,6 +363,11 @@ founderping request PATCH /projects/PROJECT_ID/topics/TOPIC_ID '{"direct_link_en
 A **touchpoint** is where/when topics are surfaced in your product. Rows are
 `{ id, name, config, status }`.
 
+A touchpoint has no kind of its own: whether it pops up by itself or waits for a
+tap follows from the `type` of the topics bound to it. All of them must therefore
+be the same type — mixing reactive and proactive on one touchpoint is rejected
+server-side.
+
 **Top-level fields:**
 
 
@@ -378,9 +383,7 @@ A **touchpoint** is where/when topics are surfaced in your product. Rows are
 
 | Key           | Type                     | Notes                                                                                                   |
 | ------------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `mode`        | `reactive` | `proactive` | Must match the `type` of the topics bound here (enforced server-side).                                  |
-| `force_show`  | boolean                  | Bypass the normal show/skip heuristics.                                                                 |
-| `probability` | number `0`–`1`           | Mount-time sampling rate — the touchpoint only fires if a per-mount roll passes. Omitted = always fire. |
+| `probability` | number `0`–`1`           | Mount-time sampling rate — the touchpoint only fires if a per-mount roll passes. Omitted = always fire. Paces **proactive** touchpoints only: one bound to a reactive topic opens the chat the user just asked for, so it is never sampled. |
 | `y_position`  | number `0`–`1`           | Vertical placement of the widget button, as a fraction of viewport height (0 = top).                    |
 | `topics`      | array                    | Topic **bindings** — which topics this touchpoint can surface (see below).                              |
 
@@ -392,7 +395,7 @@ A **touchpoint** is where/when topics are surfaced in your product. Rows are
 | ------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `topic_id`   | string     | Required. The topic to surface.                                                                                                                   |
 | `weight`     | number ≥ 0 | Relative pick weight when several topics compete.                                                                                                 |
-| `conditions` | array      | Gates on when the topic may fire. Each item needs a `type` of `time_range`, `weekdays`, or `cooldown`; its other params are passed through as-is. |
+| `conditions` | array      | Gates on when the topic may fire — **proactive topics only**; the widget ignores them on a reactive binding, since the user opens that chat themselves. Each item needs a `type` of `time_range`, `weekdays`, or `cooldown`; its other params are passed through as-is. |
 
 
 ```bash
@@ -406,7 +409,6 @@ founderping request DELETE /projects/PROJECT_ID/touchpoints/TP_ID
 {
   "name": "post_checkout",
   "config": {
-    "mode": "proactive",
     "probability": 0.3,
     "topics": [
       { "topic_id": "TOPIC_ID", "weight": 1, "conditions": [{ "type": "cooldown", "minutes": 1440 }] }

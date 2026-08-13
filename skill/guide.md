@@ -63,9 +63,9 @@ Prefer the UI? **Sign up free** and follow the onboarding tutorial in the Dashbo
 
 ### Step 1 — Decide what to ask (Topics)
 
-1. **Create Topics.** A Topic is something you want FounderPing to talk to users about—a churn reason, a reaction to a new feature, an onboarding check. It comes in two flavors:
-  - **Reactive Topic — the always-on helper.** Exactly **one per project**. Once enabled, it sits behind a small sticky side button in your product, so users can open it whenever they want to say something. It’s a general “tell us anything” helper, not a targeted question.
-  - **Proactive Topics — targeted, pop-up questions.** **Zero to many per project**. Each one focuses on a single question or a specific class of issue, and the AI raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
+1. **Create Topics.** A Topic is something you want FounderPing to talk to users about—a churn reason, a reaction to a new feature, an onboarding check. Which flavor it is comes down to one question: **who starts the conversation?**
+  - **Reactive Topics — the user comes to you.** Every project starts with one, the **Default Topic**, sitting behind a small sticky side button so users can open it whenever they want to say something: a general “tell us anything” helper. Add more for the entry points you place yourself—a “Talk to the founder” button, a link in your help menu—and they open the moment they’re tapped.
+  - **Proactive Topics — you go to the user.** Each one focuses on a single question or a specific class of issue, and the AI raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
 
 Both flavors are configured through the same two core concepts, edited in the Dashboard:
 
@@ -83,7 +83,7 @@ The Hint is split into short, **orthogonal** fields — each one captures a *dif
 
 Keep every field tight — a sentence or two each (rough budget: ~30 words for Context, Goal, and Requirements, up to ~50 for Plan). The Hint is a quick brief the AI skims before talking, not an essay; padding it only buries the signal. **§3.6** walks through how to write each field so the AI can act on it.
 
-A **Reactive Topic** is the open-ended “tell us anything” helper, so it uses just **one** of these — **Requirements**. With no fixed situation, single goal, or scripted flow to pin down, Context, Goal, and Plan are all dropped; only the guard-rails for how the AI should behave still apply.
+**Reactive Topics** are open-ended — the user brings the subject — so they use just **one** of these: **Requirements**. With no fixed situation, single goal, or scripted flow to pin down, Context, Goal, and Plan are all dropped; only the guard-rails for how the AI should behave still apply.
 
 You don’t have to write any of this from scratch. You can **co-design the Topic with FounderPing’s AI assistant** — describe your goal in a short chat and it drafts the Hint fields and Openings with you — or hand it to **your own AI** with the *“Co-design with your AI”* button, which points your assistant at this guide and has it walk you through the same fields. Everything stays editable by hand.
 
@@ -97,7 +97,7 @@ This is the main path: an embedded widget that brings your Topics to users right
 
 1. **Touchpoints — naming the moments.** A **Touchpoint** is a named hook you place in your code at a meaningful moment, e.g. `founderping.mount("post_checkout")`. It’s just a label for “something interesting happened here”; *what* should be asked there is decided later in the Dashboard, not in your code.
 2. **Bind Topics to Touchpoints (with Conditions).** In the Dashboard you bind one or more Topics to each Touchpoint, so firing that moment can start the right conversation. Bindings can carry **Conditions** that gate when they’re allowed to fire—time windows, weekdays, and per-user cooldowns (see *Appendix A — Touchpoint Condition types* for the full list).
-  The **Reactive Topic** doesn’t need a Touchpoint—when enabled it always shows as the sticky “tell us anything” button. **Proactive Topics** are the ones you bind to Touchpoints so they pop up at the right time.
+  The **Default Topic** needs no Touchpoint—when enabled it always shows as the sticky “tell us anything” button. Everything else is bound here: **Proactive Topics** so they pop up at the right moment, and any further **Reactive Topic** so the button *you* placed opens the chat you meant. A Touchpoint has no flavor of its own—it takes it from the Topics bound to it, so they must all be the same flavor, and the first one you bind settles whether this Touchpoint pops up on its own or waits for a tap.
 3. **Integrate the widget once.** Add the one-line widget script to your product and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard—no further frontend changes per question. (Concrete snippets, the widget JavaScript API, and the runtime mechanics—coalesce, Conditions, and Guards—are covered in §4 *Developer integration*.)
 
 **Path B — Direct Links (outside your product)**
@@ -170,28 +170,33 @@ Follow their lead on how far to go on any given thread; Your default stance is *
 
 The **Opening** is what the user reads — often the only thing they weigh before deciding whether to answer. Apply this whenever you draft an Opening, for the developer or alongside them. (The **Hint** — what the AI reads — has its own rules in **§3.6**.)
 
-You're asking for a favor: honest feedback. Write from the user's side — polite, respectful, curious. A message that makes them feel seen earns trust.
+You're asking a stranger for a favor: their honest opinion, on their time. What earns it is sincerity — respect for the intrusion, real care about the product, and the sense that what they say lands somewhere. Flattery ("your feedback is incredibly valuable to us") and survey wording earn nothing; users have learned to skip both.
 
-**Principles worth considering:**
+Openings follow a fixed **shape**, written in **bubbles** — the separate messages the chat delivers, one per line break. The beats are what matter; how you phrase each one is yours. Write the way you'd actually message someone — warm, direct, a little different in each variant. Keep the beats and bubble split; vary the wording beat by beat.
 
-1. **Acknowledge them.** Name what they just did or where they are — concretely enough that the message feels personal, not broadcast.
-2. **Ask for a moment of their time.** A short, low-pressure request; you're asking, not assigning.
-3. **Say why it matters.** Their answer shapes what gets built; where you can, show how it comes back to them as a better product.
-4. **Write from their side.** Polite and request-oriented — the kind of tone that earns trust and makes a candid answer feel welcome.
+**Proactive Topics** (the AI interrupts after something the user did) — **two bubbles**:
 
-**Proactive Topics** (you reach out after something they did): name the moment concretely from Context, ask lightly for their time, say why it matters, then one question from the Plan.
+**Bubble 1 — earn it:** own the interruption politely (*"hope you don't mind"*, *"hope I'm not interrupting"* — not an apology), say you take the app seriously, then say why their answer matters **to you and to them** (*"…really matters to me and helps me keep improving it for you"*).
 
-**Reactive Topics** (they opened the chat): welcome them, say why their words matter, invite what's on their mind.
+**Bubble 2 — ask:** name what they just did from **Context**, then one question from **Plan** — phrased as a request, answerable in a sentence. Open the second bubble however reads naturally — *"Looks like you just finished…"*, *"I noticed you wrapped up…"*, or fold the moment into the question. You don't need to start with *"So,"* every time.
 
-Example (proactive, with Introduction + hook):
+Filled in, with the Introduction the widget prepends automatically:
 
 > Hi, I'm Ava, founder of SpeakEasy.
 >
-> I see you've completed the mock interview — would you have a minute to share how it went? Your take is what helps us make this better for you.
+> Hope you don't mind me reaching out. I genuinely want my app to be the best it can be, so what you say really matters to me and helps me keep improving it for you.
 >
-> So, how much do you feel this session helped improve your speaking fluency and confidence?
+> Looks like you just finished the mock interview — how much did it help your speaking confidence? 💬
 
-Keep proactive hooks around 60 words, reactive around 35. Line breaks become separate chat bubbles. Use plain newlines — no `<br>` — and no markdown: the chat renders text literally.
+If the Introduction speaks for a team rather than one person, the possessives follow it — *our app*, *our users*.
+
+**Reactive Topics** (the user opened the chat) — **one bubble**, two beats: thank them and say you want to hear it, then ask what's on their mind. Nobody interrupted them and you don't know what they were doing, so there's no moment to name and no reason to ask for their time. Phrase each beat in your own words — the examples below are one voice, not a script.
+
+> Hi, I'm Ava, founder of SpeakEasy.
+>
+> Thanks for reaching out! I'd love to hear from my users. What's on your mind? 💬
+
+Keep proactive hooks under ~50 words, reactive under ~25. **At most one emoji per opening** — each example below shows one, placed where it feels natural. **Every line break starts a new chat bubble** — one Enter in the Dashboard, one `\n` over the API — and several line breaks in a row count as one break, so a blank line between paragraphs gives you two bubbles, not three. No markdown: the chat renders text literally.
 
 ### 3.6 Writing Hints the AI can act on
 
@@ -205,7 +210,7 @@ The **Hint** is re-read before every turn of a live conversation to decide what 
 
 **Plan — what to do.** Sketch how the conversation should move: the order of beats, what to explore first, when to go deeper or close — actions and directions, not exact question wording. The Opening's question should draw from the Plan — a concrete starting move toward the Goal. Goal says *what you want to know*; Plan says *how to get there*. If both fields say the same thing in different words ("learn why they churn" / "find out why they left"), the AI gets no guidance on what to actually do next.
 
-**Reactive Topics use only Requirements.** The always-on helper has no fixed moment, single goal, or scripted flow to pin down — Context, Goal, and Plan are all dropped. Requirements still apply: how the AI should behave when the user could say anything.
+**Reactive Topics use only Requirements.** The user brought the subject, so there's no fixed moment, single goal, or scripted flow to pin down — Context, Goal, and Plan are all dropped. Requirements still apply: how the AI should behave when the user could say anything.
 
 ---
 
@@ -266,7 +271,7 @@ Everything is exposed on the global `window.founderping`. The install script reg
 
 ### 4.3 How the Widget works
 
-**One script, loaded once.** Integration is a single `<script>` tag carrying your `data-project-key`. The Widget renders inside an isolated iframe, so it never collides with your page's CSS or JavaScript. On load it performs a one-time **bootstrap**: it pulls your project's Topics, Touchpoint bindings, and any pending Outreach, then caches them locally—so every runtime decision afterward is instant and needs no server round-trip. That cache isn't permanent—it refreshes on a fixed interval (`BOOTSTRAP_EXPIRES_MINUTES`; see **Appendix A.1** for the value), so edits you make in the Dashboard roll out on their own without a redeploy. If your **Reactive Topic** is enabled, its sticky “tell us anything” button appears on its own; no further code is required.
+**One script, loaded once.** Integration is a single `<script>` tag carrying your `data-project-key`. The Widget renders inside an isolated iframe, so it never collides with your page's CSS or JavaScript. On load it performs a one-time **bootstrap**: it pulls your project's Topics, Touchpoint bindings, and any pending Outreach, then caches them locally—so every runtime decision afterward is instant and needs no server round-trip. That cache isn't permanent—it refreshes on a fixed interval (`BOOTSTRAP_EXPIRES_MINUTES`; see **Appendix A.1** for the value), so edits you make in the Dashboard roll out on their own without a redeploy. If your **Default Topic** is enabled, its sticky “tell us anything” button appears on its own; no further code is required.
 
 **Touchpoints decouple code from configuration.** A call like `founderping.mount("post_checkout")` doesn't say “show this dialog”—it says *“this named moment just happened.”* Which Topic (if any) fires there, and under which Conditions, is bound in the Dashboard against that name. So a `mount(...)` is a **candidate**, not a command: the runtime may open it, open something else instead, or show nothing at all.
 
@@ -276,27 +281,34 @@ Everything is exposed on the global `window.founderping`. The install script reg
 mount("…")  →  coalesce  →  guards  →  conditions  →  pick one Topic  →  at most one widget
 ```
 
-1. **Coalesce — batch the burst.** `mount()` calls that land close together (including the Reactive button's own auto-mount and a page-load *restore*) are collected into one short window (`COALESCE_WINDOW_MS`) and resolved *together*, so the user never sees a stack of competing dialogs. A Touchpoint can also be set to fire only a fraction of the time (a **`probability`**); that dice roll happens here, and a Touchpoint that misses drops out before anything else is considered.
+1. **Coalesce — batch the burst.** `mount()` calls that land close together (including the sticky button's own auto-mount and a page-load *restore*) are collected into one short window (`COALESCE_WINDOW_MS`) and resolved *together*, so the user never sees a stack of competing dialogs. A **Proactive** Touchpoint can also be set to fire only a fraction of the time (a **`probability`**); that dice roll happens here, and a Touchpoint that misses drops out before anything else is considered.
 2. **Guards — checked first, before any content is chosen.** Two layers protect the user's attention:
   - **Focus Guard** — while the user is actively engaged with a conversation (recently typed, recorded, scrolled history, etc.), a new auto-mount won't pull them out of it. Once they've been idle past `FOCUS_GUARD_MS`, mounts can take over again.
   - **Quiet Guard** — if the user explicitly *closes* the Widget, it stays quiet for a cool-off period (`QUIET_GUARD_MS`) before anything auto-opens again.
-  If a Guard is holding the Widget, nothing new auto-opens; a page refresh simply restores whatever the user already had.
+  If a Guard is holding the Widget, nothing new auto-opens; a page load simply restores whatever the user already had (see *A conversation follows the user* below).
 3. **Conditions & pacing — eligibility and frequency gates.** Two kinds of gate decide whether a surviving candidate may actually fire, both evaluated in the end user's own local context:
-  - **Per-binding Conditions.** Each Topic↔Touchpoint binding may carry time-of-day, weekday, and a per-user **cooldown** (“don't ask the same person about this Topic again so soon”). *All* conditions on a binding must pass. (Full list and exact semantics: **Appendix A.2**.)
-  - **Proactive pacing — a project-wide cooldown.** One global setting, **“Minimum time between proactive pop-ups”** in the Dashboard (**Engage**), throttles *every* proactive Topic together: once any proactive pop-up has appeared, no new proactive pop-up appears until that gap elapses—so a project with many Touchpoints can't gang up on one user. It paces **proactive pop-ups only**: the Reactive “tell us anything” button, queued Outreach, and `force_show` moments are never held back by it. It's **off by default** (leave it at `0`/blank to disable), is capped at 7 days, and is measured from the last proactive pop-up (a page refresh on its own doesn't restart the clock).
+  - **Per-binding Conditions.** Each **Proactive** Topic↔Touchpoint binding may carry time-of-day, weekday, and a per-user **cooldown** (“don't ask the same person about this Topic again so soon”). *All* conditions on a binding must pass. Reactive bindings carry none — the user opens those chats themselves, so there is nothing to pace. (Full list and exact semantics: **Appendix A.2**.)
+  - **Proactive pacing — a project-wide cooldown.** One global setting, **“Minimum time between proactive pop-ups”** in the Dashboard (**Engage**), throttles *every* proactive Topic together: once any proactive pop-up has appeared, no new proactive pop-up appears until that gap elapses—so a project with many Touchpoints can't gang up on one user. It paces **proactive pop-ups only**: chats the user opens themselves (the sticky button, and any Touchpoint bound to a Reactive Topic) and queued Outreach are never held back by it. It's **off by default** (leave it at `0`/blank to disable), is capped at 7 days, and is measured from the last proactive pop-up (a page refresh on its own doesn't restart the clock).
 4. **Pick one Topic.** A moment usually maps to a single Topic, but when several survive the gates above:
-  - **Proactive beats Reactive** — an auto-pop-up Topic outranks the sticky “tell us anything” button; the button only wins when no proactive Topic is in the running.
+  - **A moment you mounted beats the sticky button** — the “tell us anything” button is reachable at any time, so anything a `mount(...)` raised for *this* moment takes the screen instead; the button only wins when nothing else is in the running.
   - **Stay on the current conversation** — if the user is already in one of the surviving Topics, the Widget keeps them there instead of switching.
   - **Otherwise weighted-random** — one is drawn at random, biased by the **weight** you set per binding in the Dashboard (higher weight = chosen more often). It's an even split only when the weights are equal.
+
+**A conversation follows the user, not the page.** If the user is mid-chat and clicks through to another page of your app—or just refreshes—the same conversation comes back exactly as they left it: open if it was open, parked on the sticky button if they minimised it. The only requirement is that the new page also loads the Widget (§4.1). The hand-off lasts as long as the Focus Guard window (`FOCUS_GUARD_MS`) measured from the last time that chat was shown or touched, and it deliberately can't renew itself—restoring a chat isn't engagement, so the window keeps draining while the user browses. Once it runs out, the screen goes back to the sticky button (or to nothing at all, in a project that turned the Default Topic off) and a new page is free to raise its own pop-up again. That's also why a chat from yesterday never re-opens by itself. One caveat: the Widget's memory is per browser origin, so a conversation doesn't carry across different domains (`www.example.com` → `app.example.com` starts clean).
 
 **Two things can jump this queue:**
 
 - **Outreach pre-empts a Topic.** If you've queued a direct **Outreach** for this user (a thread follow-up or re-engagement, §2 Step 5), it takes the slot ahead of whatever Topic the moment would otherwise have triggered.
-- **`force_show` overrides the gates.** A Touchpoint marked `force_show` in the Dashboard is for moments that must not be missed (post-purchase confirmation, error-recovery, a required notice). It **skips every gate above—both Guards and all Conditions (including the per-user cooldown and the project-wide proactive pacing)—and pre-empts Outreach**—so it appears even if the user just closed the Widget or is mid-conversation (it swaps its content in place). It still respects `probability`, and leaning on it too often erodes users' trust, so reserve it for genuinely critical moments.
+- **A chat the user asked for pre-empts everything.** A Touchpoint **you** mount that is bound to a **Reactive Topic** (your own “talk to founder” button) skips every gate above and outranks both Outreach and any competing pop-up—it even swaps its content in place if the Widget is already open on something else. The user tapped your button, so the chat they asked for is never withheld. Such a binding has no Conditions to begin with: the Dashboard shows “No conditions” on those rows.
 
 The net effect: think of `mount()` as *raising your hand*. The runtime referees every raised hand so the user ends up with **at most one** widget, shown at a sensible time, never spammed.
 
-**When a proactive pop-up doesn't appear** (and you expected one), it's almost always one of the gates above doing its job: a **Guard** is active (the user recently *closed* the Widget, or is still mid-conversation), a per-binding **Condition** or **cooldown** hasn't elapsed yet, the project-wide **proactive pacing** window is still open from an earlier pop-up, or the Touchpoint's **`probability`** rolled it out this time. The Reactive “tell us anything” button is exempt from all of these, so it stays reachable even while proactive pop-ups are paused. For a moment that must always surface no matter what, mark its Touchpoint `force_show`.
+**When a proactive pop-up doesn't appear** (and you expected one), it's almost always one of the gates above doing its job: a **Guard** is active (the user recently *closed* the Widget, or is still mid-conversation), a per-binding **Condition** or **cooldown** hasn't elapsed yet, the project-wide **proactive pacing** window is still open from an earlier pop-up, or the Touchpoint's **`probability`** rolled it out this time.
+
+Every gate above exists to pace **interruptions**, so the two entry points the user reaches for themselves are treated differently:
+
+- **A Touchpoint you mount onto a Reactive Topic** clears *every* gate—both Guards and proactive pacing—and has no Conditions to clear. It isn't sampled either: the Dashboard shows its `probability` fixed at `1`, because "the button sometimes does nothing" is not a behaviour to offer.
+- **The always-on sticky button** has no Conditions either, is never sampled, and the project-wide proactive cooldown never paces it. The Guards still apply, though: the Widget mounts that one by itself rather than at a moment the user chose, so after the user *closes* the Widget it stays away for the cool-off period too—otherwise closing it would do nothing.
 
 ### 4.4 Examples
 
@@ -427,7 +439,7 @@ The named constants §4.3 refers to, and their concrete values:
 
 ### A.2 Touchpoint Condition types
 
-A binding ties a Topic to a Touchpoint and can carry zero or more **Conditions**. All conditions on a binding must pass (AND logic) for that Topic to be eligible to fire. Supported types:
+A binding ties a Topic to a Touchpoint. A **Proactive** binding can carry zero or more **Conditions**, and all of them must pass (AND logic) for that Topic to be eligible to fire. A **Reactive** binding carries none: Conditions exist to pace an interruption, and a chat the user opened themselves isn’t one. Supported types:
 
 - **time_range** — a wall-clock window in the end user’s timezone, with `start` / `end` as `HH:mm`. Omit `start` for “no lower bound” or `end` for “no upper bound.” Multiple `time_range`s can be combined for split windows.
 - **weekdays** — restricts firing to specific days of the week (`0 = Sunday … 6 = Saturday`).
@@ -435,7 +447,7 @@ A binding ties a Topic to a Touchpoint and can carry zero or more **Conditions**
   - `-1` — ask only once; any prior reply blocks it forever (per browser slot).
   - `0` — no cooldown; re-fires after every reply.
   - `>0` — minimum minutes between the user’s last reply and the next allowed fire.
-  Notes: the “last reply” timestamp is tracked **per Topic, per user** (not per binding); openings the user merely saw but never replied to don’t count; and `force_show` on a Touchpoint bypasses cooldown entirely. (Implementation specifics are in `doc/impl/touchpoint.md`.)
+  Notes: the “last reply” timestamp is tracked **per Topic, per user** (not per binding), so a chat opened through a Reactive entry point still counts against the cooldown of any Proactive binding to the same Topic; openings the user merely saw but never replied to don’t count. (Implementation specifics are in `doc/impl/touchpoint.md`.)
 
 ---
 

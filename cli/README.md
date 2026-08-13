@@ -134,7 +134,7 @@ founderping request POST /projects/PID/topics topic.json
 founderping request POST /projects/PID/topics @topic.json
 
 # Create from stdin
-echo '{"name":"post_checkout","config":{"mode":"proactive"}}' \
+echo '{"name":"post_checkout","config":{"probability":0.3}}' \
   | founderping request POST /projects/PID/touchpoints -
 
 # Update / delete
