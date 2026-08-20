@@ -288,12 +288,8 @@ A **topic** is one thing you want to learn from users.
 | `type`                | `reactive` | `proactive` | Required on create. `reactive` = waits for the user; `proactive` = the AI opens.                                                                                            |
 | `hint`                | object                   | The design brief — **exactly these four keys**, all optional strings (≤ 4,000 chars each): `context`, `goal`, `requirements`, `plan`. Unknown keys are rejected. See below. |
 | `openings`            | string[]                 | Opener lines (≤ 500 chars each); the AI uses one per conversation. Blank entries are dropped; **max 10**.                                                                   |
-| `status`              | `active` | `archived`    | Patch only.                                                                                                                                                                 |
-| `enabled`             | boolean                  | Whether the topic can fire.                                                                                                                                                 |
-| `direct_link_enabled` | boolean                  | Turns on the shareable direct link.                                                                                                                                         |
-| `metadata`            | object                   | Free-form extras, shallow-merged into the row's metadata.                                                                                                                   |
-
-
+| `status`              | `active` | `archived`    | Patch only. `archived` is how a topic goes quiet: the Widget stops receiving it, so every Touchpoint bound to it has nothing to open.                                        |
+| `direct_link_enabled` | boolean                  | Turns on the shareable direct link.                                                                                                                                                                                      |
 **The** `hint` **brief** is not a free sentence — it's a structured object with four
 fixed sections:
 
@@ -312,7 +308,7 @@ proactive topics use all four.
 ### `GET·POST /projects/{id}/topics`
 
 `GET` returns rows shaped `{ id, created_at, hint, openings, metadata, status }`
-(`hint` is the JSON string above; `metadata` carries `name`, `type`, `enabled`,
+(`hint` is the JSON string above; `metadata` carries `name`, `type`,
 `direct_link_enabled`).
 
 ```bash
@@ -331,8 +327,7 @@ founderping request POST /projects/PROJECT_ID/topics @topic.json
   },
   "openings": [
     "Looks like you've just finished setting things up — got a minute? What you tell me here decides what I smooth out next.\n\nWhere did it slow you down the most?"
-  ],
-  "metadata": { "enabled": true }
+  ]
 }
 ```
 
@@ -528,6 +523,12 @@ founderping request GET /projects/PROJECT_ID/verify
   "billing_reason": null
 }
 ```
+
+Every project is created with `localhost` and `127.0.0.1` already allowed, so the
+widget runs on a dev machine out of the box. Those entries don't satisfy
+`domains_ok` though — it stays `false` until the domain the product is actually
+served from is on the list (**Settings → Allowed Domains**, or
+`PATCH /projects/{id}` with `domains`).
 
 ---
 
