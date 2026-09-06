@@ -45,10 +45,10 @@ every project is created with these, so there is no create/delete for them.
 - Widget branding — the bot avatar, the accent color, and the **light / dark
 theme** — is **Dashboard-only** and has no endpoint here. It's picked against a
 live preview, so it's a step to hand back to the user rather than script: send
-them to the **Engage** page's **“Meet users as:”** card. (The theme matches the
+them to the **Settings** page's **“Meet users as”** card. (The theme matches the
 site the widget is embedded in; it's a per-project choice, not the visitor's
 system setting.)
-- CSV query params take comma-separated values, e.g. `?status=summarized,archived`.
+- CSV query params take comma-separated values, e.g. `?sentiment=positive,neutral`.
 
 
 
@@ -70,10 +70,8 @@ system setting.)
 | `PATCH·DELETE /projects/{id}/topics/{topicId}`     | Update / delete a topic                               |
 | `GET·POST /projects/{id}/touchpoints`              | List / create touchpoints                             |
 | `PATCH·DELETE /projects/{id}/touchpoints/{tpId}`   | Update / delete a touchpoint                          |
-| `GET /projects/{id}/conversations`                 | Search summarized conversations                       |
-| `GET /projects/{id}/users`                         | List end-users (outreach targets)                     |
-| `POST /projects/{id}/outreach`                     | Start an outreach conversation with a user            |
-| `POST /projects/{id}/conversations/{cid}/outreach` | Append to an outreach thread                          |
+| `GET /projects/{id}/conversations`                 | Search summarized and Direct Chat conversations       |
+| `GET /projects/{id}/users`                         | List end-users with structured sessions               |
 | `GET /projects/{id}/status`                        | Overview metrics for a time window                    |
 | `GET /projects/{id}/verify`                        | Config + billing health check                         |
 
@@ -140,7 +138,7 @@ Create a project under an org you own (`orgId` comes from `GET /me`).
 - `founder` — the widget talks as the **founder's AI stand-in** ("I'm *Alice*'s AI"). Warmer and more personal, so users feel they're talking almost directly to the founder — which tends to draw more candid feedback. Requires `founderName`. Pick this for founder-led / early-stage products.
 - `brand` — the widget talks as an **AI feedback assistant for the product team** ("I'm the AI assistant for *App*; the team reads every chat"). Neutral and safe for any product; needs only `name`. Pick this when there's no single public founder or the team prefers a product voice.
 
-> **Looks aren't set here.** Every project starts with a **default avatar** and the **light** theme, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Avatar, accent color, and theme are Dashboard-only (see *Conventions*); the user sets them on the **Engage** page's **“Meet users as:”** card.
+> **Looks aren't set here.** Every project starts with a **default avatar** and the **light** theme, and `founderName` only changes how the AI refers to itself in conversation — it uploads nothing. Avatar, accent color, and theme are Dashboard-only (see *Conventions*); the user sets them on the **Settings** page's **“Meet users as”** card.
 
 ```bash
 founderping request POST /orgs/ORG_ID/projects '{"name":"Acme","mode":"brand","doc":"# Acme\n\nAcme helps teams …"}'
@@ -422,62 +420,86 @@ founderping request DELETE /projects/PROJECT_ID/touchpoints/TP_ID
 
 ### `GET /projects/{id}/conversations`
 
-Search summarized conversations (same data as the dashboard list). All params
-optional.
+Search conversations visible in the Dashboard, including summarized AI chats
+and Direct Chat threads. All params are optional.
 
 
 | Param                                            | Meaning                           |
 | ------------------------------------------------ | --------------------------------- |
 | `from`, `to`                                     | ISO date bounds                   |
 | `q`                                              | full-text search                  |
-| `sentiment`, `quality`, `status`, `topic`, `tag` | CSV filters (`topic` = topic ids) |
+| `sentiment`, `quality`, `topic`, `tag`           | CSV filters (`topic` = topic ids)  |
+| `direct_chat`                                    | `true` keeps only founder-handled threads |
 | `limit`                                          | default `100`                     |
 | `offset`                                         | default `0`                       |
 
 
 ```bash
-founderping request GET "/projects/PROJECT_ID/conversations?status=summarized&limit=20"
+founderping request GET "/projects/PROJECT_ID/conversations?direct_chat=true&limit=20"
 ```
+
+Each conversation row includes its `session_id`, `session_type`,
+`session_user_identifier`, and a `direct_chat` boolean alongside the summary
+fields. `direct_chat` is `false` for a plain AI conversation and `true` once a
+founder has taken it over.
 
 ---
 
 
 
-## Users & outreach
+## End-users
 
 
 
 ### `GET /projects/{id}/users`
 
-The pool of end-users you can reach out to. Params: `page` (1), `page_size` (12),
-`query`/`q`, `sort` (`time_desc`).
+List end-users represented in conversation history. Params: `page` (1),
+`page_size` (12), `query`/`q`, and `sort` (`time_desc`, `time_asc`,
+`conversations_desc`, or `conversations_asc`).
 
 ```bash
 founderping request GET "/projects/PROJECT_ID/users?page=1&page_size=20"
 ```
 
+Sessions are structured objects rather than a flat list of ids:
 
-
-### `POST /projects/{id}/outreach`
-
-Start a new outreach conversation on a user's most recent deliverable session.
-Pick `session_ids` from the users list.
-
-```bash
-founderping request POST /projects/PROJECT_ID/outreach '{"message":"Hi! Got 30s for a quick question?","session_ids":["sess-uuid"]}'
+```json
+{
+  "users": [
+    {
+      "user_key": "customer-42",
+      "display_name": "customer-42",
+      "contact": "customer-42",
+      "device": "Mozilla/5.0 …",
+      "unread_candidates": [
+        {
+          "id": "conversation-uuid",
+          "last_summarized_to": "2026-08-27T10:30:00Z",
+          "last_message_at": "2026-08-27T10:29:00Z"
+        }
+      ],
+      "sessions": [
+        {
+          "id": "session-uuid",
+          "type": "web_widget",
+          "user_agent": "Mozilla/5.0 …",
+          "created_at": "2026-08-27T10:00:00Z",
+          "updated_at": "2026-08-27T10:30:00Z"
+        }
+      ],
+      "session_count": 1,
+      "conversation_count": 3,
+      "first_seen": "2026-08-27T10:00:00Z",
+      "last_active": "2026-08-27T10:30:00Z",
+      "sentiment": { "positive": 1, "neutral": 1, "negative": 0 }
+    }
+  ],
+  "total_users": 1,
+  "total_conversations": 3,
+  "page": 1,
+  "page_size": 20
+}
 ```
-
-→ `201 { conversation_id, session_id, pending_count, queued_at }`.
-
-### `POST /projects/{id}/conversations/{cid}/outreach`
-
-Append another message to an existing outreach thread.
-
-```bash
-founderping request POST /projects/PROJECT_ID/conversations/CONV_ID/outreach '{"message":"Following up — still keen to hear your thoughts!"}'
-```
-
-→ `{ pending_count, queued_at }`.
 
 ---
 
@@ -501,7 +523,7 @@ founderping request GET "/projects/PROJECT_ID/status?window=7d"
 `reminders` is a list of `{ code, message }` setup nudges worth relaying to the
 user. Currently the only one is `avatar_missing` — the project still rides the
 default avatar, so the widget reaches users with a generic image; prompt them to
-upload a founder photo / brand logo in the Dashboard (**Engage → "Meet users
+upload a founder photo / brand logo in the Dashboard (**Settings → "Meet users
 as"**), since avatar upload isn't available over the API. Empty once handled.
 
 ### `GET /projects/{id}/verify`

@@ -1,6 +1,6 @@
 ---
 name: founderping
-description: Drive FounderPing — an AI user-feedback / thought-capture system — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts and integration details live in the bundled guide.md; every endpoint in api.md.
+description: Drive FounderPing — an AI user-feedback / thought-capture system — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts and integration details live in the bundled doc/guide.md; every endpoint in doc/backend_api.md.
 ---
 
 # FounderPing
@@ -12,7 +12,7 @@ users and files what they said as sentiment-scored, tagged **Points**.
 
 This skill lets you operate FounderPing on the developer's behalf through the **`founderping`
 CLI**, which wraps the `/api/v1` REST API. Anything the Dashboard can do —
-projects, the product doc, topics, touchpoints, widget keys, domains, outreach,
+projects, the product doc, topics, touchpoints, widget keys, domains,
 reading feedback — you can do from the CLI.
 
 Don't assume *why* the developer opened this skill. They might be setting FounderPing up
@@ -21,8 +21,8 @@ make sense of feedback already collected. Work out which, then go to the matchin
 task below.
 
 - **Concepts, the full workflow, widget integration, topic-design craft, and every
-  configurable option:** [`./guide.md`](./guide.md) — read it; it's the source of truth.
-- **Every endpoint, field, and example payload:** [`./api.md`](./api.md).
+  configurable option:** [`doc/guide.md`](doc/guide.md) — read it; it's the source of truth.
+- **Every endpoint, field, and example payload:** [`doc/backend_api.md`](doc/backend_api.md).
 - Website: https://founderping.app
 
 ## The one rule
@@ -45,7 +45,7 @@ founderping request <METHOD> <PATH> [body] # authenticated call to /api/v1; prin
 `<PATH>` starts with `/` (e.g. `/me`, `/projects/PID/topics`); quote it if it has a
 query string. `[body]` is a JSON file path, `@file.json`, `-` (stdin), or an inline
 JSON string. A non-zero exit means the call failed — read the `{ "error": {...} }`
-and react, don't retry blindly. Full surface: [`./api.md`](./api.md).
+and react, don't retry blindly. Full surface: [`doc/backend_api.md`](doc/backend_api.md).
 
 ## What you can do
 
@@ -93,7 +93,7 @@ Get the tooling in place so the rest is possible.
 
 - **Step 2 — Orient the developer, then open the conversation.** Setup is done, but
   they may not yet know what FounderPing is — they might have just told you to "add user
-  feedback." In a few sentences, say what it does and what that unlocks — [`./guide.md`](./guide.md) §1 has the
+  feedback." In a few sentences, say what it does and what that unlocks — [`doc/guide.md`](doc/guide.md) §1 has the
   framing — then call out a few things that make FounderPing different from a survey
   widget or a feedback form:
 
@@ -104,10 +104,6 @@ Get the tooling in place so the rest is possible.
     not a one-line text box — so "it's broken" becomes something you can act on.
   - **Always-on reactive helper.** Alongside those pop-ups, one sticky "tell us
     anything" button stays available so users can reach out whenever they want.
-  - **Outreach — reach back without another deploy.** When something in the
-    Dashboard needs a follow-up, FounderPing queues a message that lands the next time
-    that user is back in the product; their reply flows in like any other
-    conversation. No new email blast or frontend change.
   - **Structured insight, not a transcript dump.** Every chat is auto-summarized into
     tagged, sentiment-scored **Points** you can filter and trend in the **Overview** dashboard.
 
@@ -135,7 +131,7 @@ feedback flow, together:
    users? Shape it into one or more **topics** (a topic = one thing to learn) and
    the **touchpoints** (where/when it surfaces). Lead with their question, and
    suggest good moments they may have missed.
-2. **Lean on the guide as you go.** [`./guide.md`](./guide.md) §3 is written for you
+2. **Lean on the guide as you go.** [`doc/guide.md`](doc/guide.md) §3 is written for you
    — how to design sharp topics, hints, and openings; §4 covers how the widget is
    integrated and where `mount()` / `setUser()` calls belong. Use it to get both the
    design and the wiring right.
@@ -143,7 +139,7 @@ feedback flow, together:
    the guide and *this project's own* conventions — don't impose a workflow. The
    widget's look — its avatar/logo and accent color — isn't settable from the CLI
    (it's an image upload); if they want to brand it beyond the default, point them
-   to the Dashboard → **Engage** → **“Meet users as:”** card.
+   to the Dashboard → **Settings** → **"Meet users as:"** card.
 4. **Create and enable it over the CLI.** Once you've agreed on the design, create
    the topics and touchpoints, then confirm it can actually run:
 
@@ -153,7 +149,7 @@ feedback flow, together:
    founderping request GET  /projects/PID/verify
    ```
 
-   Exact fields, limits, and payload shapes: [`./api.md`](./api.md).
+   Exact fields, limits, and payload shapes: [`doc/backend_api.md`](doc/backend_api.md).
 
 ### Task 3 — Monitor & analyze the feedback
 
@@ -164,12 +160,12 @@ not just in wiring it up.
 
    ```bash
    founderping request GET "/projects/PID/status?window=7d"                 # volume, depth, top tags, alerts
-   founderping request GET "/projects/PID/conversations?status=summarized"  # summarized sessions + Points
+   founderping request GET "/projects/PID/conversations?limit=20"             # summarized sessions + Points
    founderping request GET "/projects/PID/users"                            # who has given feedback
    ```
 
    Conversations filter by date, tag, sentiment, quality, topic, and full-text `q`
-   (see [`./api.md`](./api.md)) — narrow to exactly the slice they care about, down
+   (see [`doc/backend_api.md`](doc/backend_api.md)) — narrow to exactly the slice they care about, down
    to a single reply.
 2. **Turn it into insight.**
    - **Mine it.** Pull the numbers they ask for — how many replied, the sentiment
@@ -199,7 +195,7 @@ software industry, and — from their repo and this conversation — a real read
 out the potential you can see — a topic worth asking, a moment worth instrumenting, a
 small experiment worth running — say why it's worth it, and offer to build it.
 Suggest, don't insist, and follow their lead. The aim is to leave them hearing their
-users better than they knew to ask for. (Design craft for this: [`./guide.md`](./guide.md) §3.)
+users better than they knew to ask for. (Design craft for this: [`doc/guide.md`](doc/guide.md) §3.)
 
 ## Keeping up to date
 

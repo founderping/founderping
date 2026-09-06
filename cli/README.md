@@ -10,7 +10,7 @@ single static binary — no Node, no Python, no runtime to install. All product
 logic lives server-side; the CLI stays deliberately thin so there's nothing to
 learn beyond `login` and `request`.
 
-- Full endpoint reference: [`../skill/api.md`](../skill/api.md)
+- Full endpoint reference: [`../skill/doc/backend_api.md`](../skill/doc/backend_api.md)
 - Agent playbook (how to drive an integration end-to-end): [`../skill/SKILL.md`](../skill/SKILL.md)
 - Website: https://founderping.app
 
@@ -142,7 +142,7 @@ founderping request PATCH  /projects/PID/topics/TID '{"status":"archived"}'
 founderping request DELETE "/projects/PID/keys?key=pk_live_xxx"
 ```
 
-See [`../skill/api.md`](../skill/api.md) for every endpoint, its parameters, and
+See [`../skill/doc/backend_api.md`](../skill/doc/backend_api.md) for every endpoint, its parameters, and
 example payloads.
 
 ---
