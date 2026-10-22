@@ -1,19 +1,24 @@
 ---
 name: founderping
-description: Drive FounderPing — an AI user-feedback / thought-capture system — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts and integration details live in the bundled doc/guide.md; every endpoint in doc/backend_api.md.
+description: Drive FounderPing — a user-feedback / thought-capture system where the developer, or an AI stand-in in their place, talks with users inside their product — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts live in the bundled doc/guide.md, the integration code in doc/web.md or doc/android.md, and every endpoint in doc/backend_api.md.
 ---
 
 # FounderPing
 
-**FounderPing** gives a product a small virtual team that holds short, natural
-conversations with its users (voice or text) and turns each chat into structured,
-taggable, searchable insight. The developer sets the goals; FounderPing talks to
-users and files what they said as sentiment-scored, tagged **Points**.
+Website: https://founderping.app
+
+**FounderPing** lets a developer talk with their users right inside the product —
+in person when they're online, through an AI **Stand-in** when they're not. The
+Dashboard's **Live** page shows who's in the product right now and opens a
+**Direct Chat** with any of them; the rest of the time the Stand-in holds short,
+natural conversations (voice or text) toward goals the developer sets. Every chat,
+whoever held it, is filed as structured, sentiment-scored, tagged **Points**.
 
 This skill lets you operate FounderPing on the developer's behalf through the **`founderping`
-CLI**, which wraps the `/api/v1` REST API. Anything the Dashboard can do —
+CLI**, which wraps the `/api/v1` REST API. Most of what the Dashboard does —
 projects, the product doc, topics, touchpoints, widget keys, domains,
-reading feedback — you can do from the CLI.
+reading feedback — you can do from the CLI. Talking to users in person (Live and
+Direct Chat) stays in the Dashboard; that part is the developer's.
 
 Don't assume *why* the developer opened this skill. They might be setting FounderPing up
 for the first time, designing a brand-new feedback flow, or just wanting to read and
@@ -22,6 +27,9 @@ task below.
 
 - **Concepts, the full workflow, widget integration, topic-design craft, and every
   configurable option:** [`doc/guide.md`](doc/guide.md) — read it; it's the source of truth.
+- **Putting the widget in their product:** [`doc/web.md`](doc/web.md) for a website or
+  web app, [`doc/android.md`](doc/android.md) for an Android app — the install, every
+  method, and what to check when nothing appears.
 - **Every endpoint, field, and example payload:** [`doc/backend_api.md`](doc/backend_api.md).
 - Website: https://founderping.app
 
@@ -97,10 +105,14 @@ Get the tooling in place so the rest is possible.
   framing — then call out a few things that make FounderPing different from a survey
   widget or a feedback form:
 
+  - **Talk to users yourself, while they're still there.** The Dashboard's **Live**
+    page shows who's in your product right now, and one click opens a chat with any
+    of them — right inside the widget they already have open. A Dashboard card, or a
+    Slack / Discord ping, tells you when someone shows up.
   - **Proactive feedback at the right moment.** You wire named **touchpoints** into
     the product (`founderping.mount("post_checkout")`, etc.); when that moment fires, the
-    widget surfaces a targeted question while the experience is still fresh. An AI
-    runs a short voice-first chat on the spot — follow-ups in the moment,
+    widget surfaces a targeted question while the experience is still fresh. Your AI
+    **Stand-in** runs a short voice-first chat on the spot — follow-ups in the moment,
     not a one-line text box — so "it's broken" becomes something you can act on.
   - **Always-on reactive helper.** Alongside those pop-ups, one sticky "tell us
     anything" button stays available so users can reach out whenever they want.
@@ -108,7 +120,8 @@ Get the tooling in place so the rest is possible.
     tagged, sentiment-scored **Points** you can filter and trend in the **Overview** dashboard.
 
   Keep the pitch conversational, not a feature list — but make sure they hear that
-  FounderPing *reaches users in context* and *goes deep in the moment*.
+  FounderPing *reaches users in context* and *goes deep in the moment* — in person
+  when they're around, through the Stand-in when they're not.
 
   Then hand it back with a couple of concrete openers, grounded in what you already
   know from their repo — for example:
@@ -132,11 +145,13 @@ feedback flow, together:
    the **touchpoints** (where/when it surfaces). Lead with their question, and
    suggest good moments they may have missed.
 2. **Lean on the guide as you go.** [`doc/guide.md`](doc/guide.md) §3 is written for you
-   — how to design sharp topics, hints, and openings; §4 covers how the widget is
-   integrated and where `mount()` / `setUser()` calls belong. Use it to get both the
-   design and the wiring right.
+   — how to design sharp topics, hints, and openings; §4 points to the integration
+   guide for their platform, which shows where `mount()` / `setUser()` calls belong.
+   Use them to get both the design and the wiring right.
 3. **Wire it in their way.** If the flow needs the widget, integrate it following
-   the guide and *this project's own* conventions — don't impose a workflow. The
+   the guide for what this codebase is — [`doc/web.md`](doc/web.md) or
+   [`doc/android.md`](doc/android.md) — and *this project's own* conventions; don't
+   impose a workflow. The
    widget's look — its avatar/logo and accent color — isn't settable from the CLI
    (it's an image upload); if they want to brand it beyond the default, point them
    to the Dashboard → **Settings** → **"Meet users as:"** card.
@@ -176,8 +191,8 @@ not just in wiring it up.
 
 ## When to stop and ask
 
-Login can't complete; a call returns `402` / billing; `verify` stays `false` after
-your fixes; or you hit a `404 not_found` where you expected data (that's a wrong id,
+Login can't complete; a call returns `402` / billing; a `verify` check that applies
+to this product stays `false` after your fixes; or you hit a `404 not_found` where you expected data (that's a wrong id,
 never "empty" — re-check it against `GET /me`). Don't guess, and don't spend the key
 on retries.
 

@@ -59,8 +59,8 @@ system setting.)
 | -------------------------------------------------- | ----------------------------------------------------- |
 | `GET /me`                                          | List orgs/projects you can act on                     |
 | `POST /orgs/{orgId}/projects`                      | Create a project (choose the widget identity mode)    |
-| `GET /projects/{id}`                               | Read a project (name, domains, metadata, doc)         |
-| `PATCH /projects/{id}`                             | Update name / domains / metadata                      |
+| `GET /projects/{id}`                               | Read a project (name, allow-lists, metadata, doc)     |
+| `PATCH /projects/{id}`                             | Update name / allow-lists / metadata                  |
 | `GET·PATCH /projects/{id}/doc`                     | Read/replace the product doc (plain text)             |
 | `GET·PATCH /projects/{id}/tag-tree`                | Read/replace the tag tree (≤3 levels deep)            |
 | `GET·PATCH /projects/{id}/attention-list`          | Read/replace the attention list (≤5)                  |
@@ -167,20 +167,24 @@ founderping request GET /projects/PROJECT_ID
 ```
 
 Returns `{ id, name, organization_id, metadata, client_auth, doc, created_at }`.
-`client_auth` holds allowed domains and widget keys; `metadata` holds the tag tree
+`client_auth` holds the allow-lists (`domains` for the web, `android_apps` for
+Android) and widget keys; `metadata` holds the tag tree
 and attention list (edit those via their dedicated endpoints below); `doc` is the
 product doc as **plain text** (the server stores it base64-encoded, but you never
 deal with base64).
 
 ### `PATCH /projects/{id}`
 
-Update any of `name`, `domains` (allow-list for the widget, ≤ 50 entries), or
-`metadata` (free-form extras, shallow-merged). At least one field is required.
+Update any of `name`, `domains` (the web widget's allow-list, ≤ 50 entries),
+`android_apps` (the Android library's allow-list of `applicationId`s, ≤ 50
+entries), or `metadata` (free-form extras, shallow-merged). At least one field
+is required, and an allow-list you send replaces the old one whole.
 `tag_tree` and `attention_list` are **not** accepted here — they're validated, so
 set them through their dedicated endpoints below.
 
 ```bash
 founderping request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.example.com"]}'
+founderping request PATCH /projects/PROJECT_ID '{"android_apps":["com.example.app","com.example.app.debug"]}'
 ```
 
 
@@ -528,7 +532,10 @@ as"**), since avatar upload isn't available over the API. Empty once handled.
 
 ### `GET /projects/{id}/verify`
 
-"Is the widget wired up and can it run?" Fix anything `false`, then re-run.
+"Is the widget wired up and can it run?" Fix anything `false`, then re-run —
+except the two allow-list checks, which go one per platform: `domains_ok` for
+the web and `android_apps_ok` for Android. Only the ones for platforms the
+product ships on need to be `true`.
 
 ```bash
 founderping request GET /projects/PROJECT_ID/verify
@@ -537,6 +544,7 @@ founderping request GET /projects/PROJECT_ID/verify
 ```json
 {
   "domains_ok": true,
+  "android_apps_ok": false,
   "has_active_topic": true,
   "has_enabled_touchpoint": true,
   "has_project_key": true,
@@ -546,11 +554,21 @@ founderping request GET /projects/PROJECT_ID/verify
 }
 ```
 
+That is a project ready to run on the web; it would need `android_apps_ok` only
+once the product ships an Android app too.
+
 Every project is created with `localhost` and `127.0.0.1` already allowed, so the
 widget runs on a dev machine out of the box. Those entries don't satisfy
 `domains_ok` though — it stays `false` until the domain the product is actually
-served from is on the list (**Settings → Allowed Domains**, or
+served from is on the list (**Settings → Project → Allowed Domains**, or
 `PATCH /projects/{id}` with `domains`).
+
+`android_apps_ok` turns `true` once `android_apps` lists at least one
+`applicationId` (**Settings → Project → Allowed Android Apps**, or
+`PATCH /projects/{id}` with `android_apps`); until then every request from the
+app is refused. It only checks that the list isn't empty, so make sure the app's
+own ids are on it, including the suffixed one each `applicationIdSuffix` build
+type reports.
 
 ---
 

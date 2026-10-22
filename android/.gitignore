@@ -1,0 +1,9 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+
+# Release secrets, read by publish.sh
+publish.env
+signing-key.asc

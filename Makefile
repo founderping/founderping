@@ -7,7 +7,7 @@
 #   - skill.tar.gz                       the installable skill bundle
 #
 # The Go module lives in ./cli; the skill sources live in ./skill (run
-# `fp sync_assets` in the main repo first so skill/guide.md + skill/api.md exist).
+# `fp sync_assets` in the main repo first so skill/doc/ is current).
 
 BINARY    := founderping
 DIST      := dist
@@ -23,7 +23,7 @@ PLATFORMS := \
 	windows/amd64 windows/arm64
 
 # Files bundled into skill.tar.gz (authored SKILL.md + docs synced from the main repo).
-SKILL_FILES := SKILL.md guide.md api.md
+SKILL_FILES := SKILL.md doc
 
 # Serialize so `clean` never races the build targets under `make -j`.
 .NOTPARALLEL:
