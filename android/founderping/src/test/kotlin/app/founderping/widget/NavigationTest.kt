@@ -3,7 +3,7 @@ package app.founderping.widget
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-private const val HOST = "founderping.app"
+private val HOSTED = HostedOrigin("https", "founderping.app")
 
 class NavigationTest {
 
@@ -12,17 +12,30 @@ class NavigationTest {
         url: String,
         hasGesture: Boolean = true,
         isRedirect: Boolean = false,
-        hostedHost: String? = HOST,
     ): Navigation {
         val scheme = url.substringBefore("://", missingDelimiterValue = "").ifEmpty { null }
         val host = if (scheme == null) null else url.substringAfter("://").substringBefore("/")
-        return decideNavigation(scheme, host, hostedHost, hasGesture, isRedirect)
+        return decideNavigation(scheme, host, HOSTED, hasGesture, isRedirect)
     }
 
     @Test
     fun `the hosted page stays in the WebView`() {
         assertEquals(Navigation.ALLOW, decide("https://founderping.app/native"))
         assertEquals(Navigation.ALLOW, decide("https://founderping.app/native/anything"))
+    }
+
+    @Test
+    fun `host comparison ignores case`() {
+        assertEquals(Navigation.ALLOW, decide("https://FounderPing.app/native"))
+    }
+
+    @Test
+    fun `the hosted host under another scheme is not the hosted page`() {
+        // Plain http is a tap away from the browser, like any other web link;
+        // file: and content: read the device, so they never load at all.
+        assertEquals(Navigation.OPEN_IN_BROWSER, decide("http://founderping.app/native"))
+        assertEquals(Navigation.BLOCK, decide("file://founderping.app/native"))
+        assertEquals(Navigation.BLOCK, decide("content://founderping.app/native"))
     }
 
     @Test
@@ -76,7 +89,7 @@ class NavigationTest {
 
     @Test
     fun `the widget's own srcdoc iframe is not mistaken for an outbound link`() {
-        assertEquals(Navigation.BLOCK, decideNavigation("about", null, HOST, false, false))
+        assertEquals(Navigation.BLOCK, decideNavigation("about", null, HOSTED, false, false))
     }
 
     @Test
@@ -87,7 +100,7 @@ class NavigationTest {
     @Test
     fun `a hostless url is not matched against a null hosted host`() {
         // Two nulls must not read as "same host" if the page URL was malformed.
-        assertEquals(Navigation.BLOCK, decideNavigation("about", null, null, true, false))
+        assertEquals(Navigation.BLOCK, decideNavigation("about", null, HostedOrigin(null, null), true, false))
     }
 
     @Test

@@ -17,29 +17,30 @@ import org.json.JSONObject
  * classic way this API goes wrong. Keep them to plain data.
  */
 internal class NativeBridge(
-    private val projectKey: String,
-    private val appId: String,
-    private val voiceInput: Boolean,
+    private val widget: WidgetConfig,
+    private val screen: String,
     private val onConfigRead: () -> Unit,
     private val onHitRegion: (String) -> Unit,
 ) {
 
     /**
-     * Tenant configuration, as a JSON string — the only rich value this bridge
-     * can carry, since it marshals nothing but primitives.
+     * Tenant configuration and the screen it is showing on, as a JSON string —
+     * the only rich value this bridge can carry, since it marshals nothing but
+     * primitives.
      *
      * Reading it is also the signal that the page we loaded is *ours*: nothing
      * else knows to ask. [onConfigRead] is what lets the overlay stay hidden
-     * until then — see [FounderPingWidget].
+     * until then — see [Overlay].
      */
     @JavascriptInterface
     fun config(): String {
         onConfigRead()
         return JSONObject()
-            .put("projectKey", projectKey)
+            .put("projectKey", widget.projectKey)
             .put("platform", "android")
-            .put("appId", appId)
-            .put("voiceInput", voiceInput)
+            .put("appId", widget.appId)
+            .put("voiceInput", widget.voiceInput)
+            .put("screen", screen)
             .toString()
     }
 

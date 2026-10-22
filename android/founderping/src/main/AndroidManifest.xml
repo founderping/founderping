@@ -24,8 +24,16 @@
     <!--
       RECORD_AUDIO is deliberately NOT declared here. Voice input is optional,
       and a library that forces a microphone permission onto every host app is
-      a library nobody wants. Declaring it is how you opt in; request it at
-      runtime too, or the mic button appears and cannot work.
+      a library nobody wants. Declaring it is how you opt in; the library then
+      asks the user for it the first time they tap the mic.
     -->
+
+    <application>
+        <!-- Starts the library with the app; see StartupProvider. -->
+        <provider
+            android:name="app.founderping.widget.StartupProvider"
+            android:authorities="${applicationId}.founderping-startup"
+            android:exported="false" />
+    </application>
 
 </manifest>

@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference
  * control available is the all-or-nothing `FLAG_NOT_TOUCHABLE`, which cannot
  * express "claim this rectangle and nothing else".
  */
-@SuppressLint("ViewConstructor", "SetJavaScriptEnabled")
+@SuppressLint("ViewConstructor")
 internal class PassthroughWebView(context: Context) : WebView(context) {
 
     /** Written from the JavaScript thread by the bridge, read here on the UI thread. */
@@ -27,7 +27,8 @@ internal class PassthroughWebView(context: Context) : WebView(context) {
         hitRegion.set(region)
     }
 
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+    // Declined if handling it failed: a broken overlay must not swallow the app's touches.
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean = guarded(fallback = false) {
         // Only the opening event decides ownership. Android delivers the rest of
         // a gesture to whoever accepted ACTION_DOWN, which is exactly what keeps
         // a drag that starts on the panel working after it leaves the panel —
@@ -36,8 +37,8 @@ internal class PassthroughWebView(context: Context) : WebView(context) {
         if (event.actionMasked == MotionEvent.ACTION_DOWN &&
             !hitRegion.get().contains(event.x.toInt(), event.y.toInt())
         ) {
-            return false
+            return@guarded false
         }
-        return super.dispatchTouchEvent(event)
+        super.dispatchTouchEvent(event)
     }
 }

@@ -2,9 +2,9 @@
 
 ## 1. What FounderPing is
 
-FounderPing is an **AI-powered user-feedback platform for product teams**. It helps you hear from the people who use your product—not through long surveys or static forms, but through **short, natural conversations** (voice or text) that an AI leads on your behalf. Each chat is turned into **structured, searchable insight**—what was said, how the user felt, what matters—so you can prioritize and act without manually reading every submission.
+FounderPing is an **AI-powered user-feedback platform for product teams**. It helps you hear from the people who use your product—not through long surveys or static forms, but through **short, natural conversations** inside your product: **you** talk with them in person when you're online, and an AI leads the conversation on your behalf (voice or text) when you're not. Every chat, whoever held it, is turned into **structured, searchable insight**—what was said, how the user felt, what matters—so you can prioritize and act without manually reading every submission.
 
-FounderPing chats with users **inside your app**—as a **Founder** or as a **Team Feedback Assistant**—and **summarizes the feedback** you collect.
+Inside your app it works in two halves: **Live**, where you see who's using the product right now and chat with any of them yourself (**Direct Chat**, §5.6), and the **Stand-in**, where the AI talks for you—as a **Founder** or as a **Team Feedback Assistant**—when you can't be there yourself. Either way, FounderPing **summarizes the feedback** you collect.
 
 ### Problems it addresses
 
@@ -31,9 +31,9 @@ Most teams don’t have one feedback problem—they have **a patchwork of channe
 **Timing and trust work against you**
 
 - **After the fact, the moment is gone.** Most feedback channels ask days or weeks later—users have already forgotten the scene, so response rates stay low and answers stay thin. FounderPing captures feedback **in the moment**, and **proactive Topics** raise the right question at the right trigger while the experience is still fresh—so more people reply, with more detail.
-- **Cold outreach keeps users at arm's length.** Star ratings and anonymous surveys feel institutional; people hold back. FounderPing lets you show up inside your app as a **Founder** (your AI stand-in) or a **Team Feedback Assistant**—a warmer, more personal voice that closes the distance and earns more candid feedback.
+- **Cold outreach keeps users at arm's length.** Star ratings and anonymous surveys feel institutional; people hold back. FounderPing lets you show up inside your app in a warmer, more personal voice that closes the distance and earns more candid feedback: **in person** when you're online, or through an AI that speaks as the **Founder** (your stand-in) or as a **Team Feedback Assistant** when you're not.
 
-FounderPing is built to replace that loop: **reach users in the product (and beyond), let AI dig deeper in the moment, and put summarized, tagged signal in one Dashboard**—so you’re not guessing from stars, silence, or scattered threads.
+FounderPing is built to replace that loop: **reach users in the product (and beyond), dig deeper with them in the moment—yourself or through your AI—and put summarized, tagged signal in one Dashboard**, so you’re not guessing from stars, silence, or scattered threads.
 
 ---
 
@@ -49,7 +49,7 @@ If you use **Cursor, Claude Code, Codex, Gemini CLI**, or a similar assistant, y
 
 1. Open your product's repo in the agent.
 2. Paste a setup prompt—for example: *"Download the FounderPing skill from https://github.com/founderping/founderping, follow it, and help me set up FounderPing in this project."*
-3. The agent pulls the **FounderPing skill**—this guide, the `founderping` CLI, and the complete API documentation—walks you through login, creates your project (picking a widget voice with you), co-designs Topics and Touchpoints with you, and drops the widget install script plus `mount()` calls into your codebase.
+3. The agent pulls the **FounderPing skill**—this guide, the `founderping` CLI, and the complete API documentation—walks you through login, creates your project (picking a widget voice with you), co-designs Topics and Touchpoints with you, and wires the widget into your codebase—the install plus your `mount()` calls.
 
 Prefer the UI? **Sign up free** and set it up in the Dashboard instead—same end state, one page at a time. A short walkthrough meets you on your first visit and shows what each page is for.
 
@@ -98,7 +98,7 @@ This is the main path: an embedded widget that brings your Topics to users right
 1. **Touchpoints — naming the moments.** A **Touchpoint** is a named hook you place in your code at a meaningful moment, e.g. `founderping.mount("post_checkout")`. It’s just a label for “something interesting happened here”; *what* should be asked there is decided later in the Dashboard, not in your code.
 2. **Bind Topics to Touchpoints (with Conditions).** In the Dashboard you bind one or more Topics to each Touchpoint, so firing that moment can start the right conversation. Bindings can carry **Conditions** that gate when they’re allowed to fire—time windows, weekdays, and per-user cooldowns (see *Appendix A — Touchpoint Condition types* for the full list).
   The **Default Topic** arrives already bound to a reserved Touchpoint of its own, so it needs no `mount(...)` from you—switch **Default Touchpoint** on and it shows as the sticky “tell us anything” button. Everything else is bound here: **Proactive Topics** so they pop up at the right moment, and any further **Reactive Topic** so the button *you* placed opens the chat you meant. A Touchpoint has no flavor of its own—it takes it from the Topics bound to it, so they must all be the same flavor, and the first one you bind settles whether this Touchpoint pops up on its own or waits for a tap.
-3. **Integrate the widget once.** Add the one-line widget script to your product and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard—no further frontend changes per question. (Concrete snippets, the widget JavaScript API, and the runtime mechanics—coalesce, Conditions, and Guards—are in `doc/frontend.md`.)
+3. **Integrate the widget once.** Install it—one script tag on the web, one library in an Android app—and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard—no further code changes per question. (Concrete snippets, every method, and the runtime mechanics—coalesce, Conditions, and Guards—are in the guide for your platform: `doc/web.md` or `doc/android.md`.)
 
 **Path B — Direct Links (outside your product)**
 
@@ -106,7 +106,7 @@ A **Direct Link** is a shareable URL (and QR code) that opens a single Topic in 
 
 ### Step 3 — Conversations happen
 
-1. **Users talk, not type.** The AI runs a short voice-or-text chat, asking follow-ups in the moment to turn “it’s broken” into something specific. Anonymous sessions stick to a real user once your app supplies a User Identifier (`doc/frontend.md`).
+1. **Users talk, not type.** The AI runs a short voice-or-text chat, asking follow-ups in the moment to turn “it’s broken” into something specific. Anonymous sessions stick to a real user once your app supplies a User Identifier (§4).
 2. **Everything is captured.** Each chat is stored as a Conversation tied to its Topic, user, and moment—ready for processing.
 
 ### Step 4 — Feedback is processed automatically
@@ -212,9 +212,9 @@ The **Hint** is re-read before every turn of a live conversation to decide what 
 
 ## 4. Integration
 
-One principle runs through all of it: **your code only names moments—the Dashboard decides what to ask and when.** You integrate once; from then on you add, retarget, or retire questions entirely from the Dashboard, with no frontend changes or redeploys.
+One principle runs through all of it: **your code only names moments—the Dashboard decides what to ask and when.** You integrate once; from then on you add, retarget, or retire questions entirely from the Dashboard, with no code changes or releases.
 
-**Everything front-end is in `doc/frontend.md`**: worked examples to copy, the install snippet, every method on `window.founderping`, the project key and allowed-domains setup, and the runtime mechanics behind it. Point your coding agent at that file and it can do the integration for you.
+**Everything your code needs is in one guide per platform**: `doc/web.md` for a website or web app, `doc/android.md` for an Android app. Each has worked examples to copy, the install, every method, the project key and allowlist setup, and the runtime mechanics behind it; the two describe the same widget and differ only where the platform does. Point your coding agent at the one for your product and it can do the integration for you.
 
 ## 5. Key concepts & settings
 
@@ -251,7 +251,7 @@ Both default to on, so if the emails stop completely, check your Account toggle 
 
 The sidebar's **Live** page is the companion entry point: a plain list of the users online right now, where clicking a row opens the same viewer on that person's latest conversation. Offline users are reached from Conversations or Users in exactly the same way—your message waits in that session's history until they open the widget in that browser again.
 
-**Who shows up on Live.** By default a visitor appears there on their own once they've spent about ten seconds actually looking at a page carrying the Widget—long enough to tell a visit from a bounce, short enough that you can still catch them. Switch **Automatic go-live** off under **Live → Live settings** and nobody appears by themselves; your own page calls `founderping.goLive()` (`doc/frontend.md`) at the moments you care about, and only those visitors become reachable in real time. Both routes are the same step—one taken by the Widget, one by you—and either way a visitor who is live stays live as they browse on. This decides only who is *listed as online*: you can write to anyone at any time from Conversations or Users, and the message waits in their history.
+**Who shows up on Live.** By default a visitor appears there on their own once they've spent about ten seconds actually looking at a page or screen carrying the Widget—long enough to tell a visit from a bounce, short enough that you can still catch them. Switch **Automatic go-live** off under **Live → Live settings** and nobody appears by themselves; your own code calls `goLive()` (§4) at the moments you care about, and only those visitors become reachable in real time. Both routes are the same step—one taken by the Widget, one by you—and either way a visitor who is live stays live as they browse on. This decides only who is *listed as online*: you can write to anyone at any time from Conversations or Users, and the message waits in their history.
 
 **How many at once.** About 20 visitors can be live at a time across your Organization—counted over all its Projects, not per Project—so not everyone who opens your product is listed. Past that, later arrivals aren't listed at all: they carry on with your Stand-in as usual and take the next seat that frees up. Paying for more capacity will raise the ceiling.
 
@@ -263,7 +263,7 @@ Direct Chat writes are Dashboard-only in this release; the public CLI/REST API h
 
 Someone going live is only worth anything if you find out while they're still there, and staring at the **Live** page all day isn't a plan. Two things watch it for you, and they split along one line: whether your Dashboard is open.
 
-**Dashboard notifications** cover the case where it is. A card slides into the bottom-right corner of any page in the project the moment a visitor goes live, hits a moment your own code named with `notifyIfLive` (`doc/frontend.md`), or writes back in a chat you've taken over; clicking it opens that conversation, so you can answer without losing the page you were on. Cards are deliberately of-the-moment—they live in that browser, expire on their own, and nothing that happened while the Dashboard was shut is waiting in them. That backlog is what **Conversations** is for. Switch them off per project under **Live → Notification settings → Dashboard notifications**.
+**Dashboard notifications** cover the case where it is. A card slides into the bottom-right corner of any page in the project the moment a visitor goes live, hits a moment your own code named with `notifyIfLive` (§4), or writes back in a chat you've taken over; clicking it opens that conversation, so you can answer without losing the page you were on. Cards are deliberately of-the-moment—they live in that browser, expire on their own, and nothing that happened while the Dashboard was shut is waiting in them. That backlog is what **Conversations** is for. Switch them off per project under **Live → Notification settings → Dashboard notifications**.
 
 **Slack and Discord** cover the case where it isn't. The same **Live → Notification settings** section has a block for each, nested under the channel switch, and from then on the same notifications post a line in the channel you pick.
 
@@ -272,11 +272,11 @@ Someone going live is only worth anything if you find out while they're still th
 
 Each project posts to one channel per app, so a connected section shows only **Disconnect**—pointing somewhere else means disconnecting and connecting again. The two apps are connected and dropped independently, and if you run both, both get told. Replies are never posted, so a talkative visitor can't flood a channel—and once you're in the conversation you're reading the Dashboard anyway. The **Channel notifications** switch pauses both without forgetting either channel. FounderPing never shows a saved webhook URL back to you, not even to the person who pasted it: it's a key to your channel, so it can be dropped but not read.
 
-Both are quiet by default when nothing is happening. Volume is your call rather than ours: each event name goes quiet for an hour after it rings (`doc/frontend.md`), and switching **Automatic go-live** off drops the automatic `live` notification too—leaving only the moments your own code names.
+Both are quiet by default when nothing is happening. Volume is your call rather than ours: each event name goes quiet for an hour after it rings (§4), and switching **Automatic go-live** off drops the automatic `live` notification too—leaving only the moments your own code names.
 
 ### 5.8 Direct Links
 
-A **Direct Link** is a shareable URL—plus a matching QR code—that opens a single Topic in a full-screen hosted chat, with **no widget and no code** on your side. It's how you reach people *outside* your product: drop it in an email, a social post, a support reply, a Discord/community message, or a printed QR. You pick the Topic, optionally put it on a branded subdomain, and share it; whoever opens it lands straight in that conversation, and their replies flow into the same Dashboard as widget feedback. Once a Topic's direct link is enabled, it's reachable at `https://founderping.app/t/<topic-id>`. Because FounderPing hosts the page, Direct Links ignore the allowed-domains list (`doc/frontend.md` §4.2) and need no project key on any page of yours—handy for beta cohorts, power users, or one-off campaigns.
+A **Direct Link** is a shareable URL—plus a matching QR code—that opens a single Topic in a full-screen hosted chat, with **no widget and no code** on your side. It's how you reach people *outside* your product: drop it in an email, a social post, a support reply, a Discord/community message, or a printed QR. You pick the Topic, optionally put it on a branded subdomain, and share it; whoever opens it lands straight in that conversation, and their replies flow into the same Dashboard as widget feedback. Once a Topic's direct link is enabled, it's reachable at `https://founderping.app/t/<topic-id>`. Because FounderPing hosts the page, Direct Links ignore the allowed-domains list (`doc/web.md` §4.2) and need no project key on any page of yours—handy for beta cohorts, power users, or one-off campaigns.
 
 ### 5.9 Points, sentiment & attention flags
 

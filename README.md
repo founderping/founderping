@@ -1,9 +1,10 @@
 # FounderPing Devkit
 
-One-click **FounderPing** integration for AI coding agents. FounderPing gives your product a
-small virtual team that talks to your users and turns those conversations into
-structured product insight. This repo builds the two release artifacts an agent
-uses to wire FounderPing into *your* project:
+One-click **FounderPing** integration for AI coding agents. FounderPing lets you talk
+with your users right inside your product — yourself when you're online, through an
+AI stand-in when you're not — and turns those conversations into structured product
+insight. This repo builds the two release artifacts an agent uses to wire FounderPing
+into *your* project:
 
 - a **skill** tarball (`skill.tar.gz`) — the agent playbook plus the product guide
   and API reference, fully self-contained, and
@@ -17,7 +18,7 @@ Website: **https://founderping.app**
 You don't clone this repo. In your own project, paste the prompt below into Claude
 Code / Codex / Cursor:
 
-> Add FounderPing (an AI user-feedback system) to this project. Download its skill bundle
+> Add FounderPing to this project. Download its skill bundle
 > — `https://github.com/founderping/founderping/releases/latest/download/skill.tar.gz` —
 > unpack it into a folder here (e.g. `founderping-skill/`), then open `SKILL.md` inside and
 > follow it.
@@ -28,10 +29,12 @@ project setup, widget install, topic design, and reading feedback back.
 ## What's in this repo
 
 - [`skill/`](skill/) — source of the published skill: `SKILL.md` (authored) plus
-  `guide.md` and `api.md` (synced from the main product docs). Shipped as
-  `skill.tar.gz`.
+  `doc/`, the product guide, web and Android integration guides and API
+  reference (synced from the main product docs). Shipped as `skill.tar.gz`.
 - [`cli/`](cli/) — the `founderping` CLI (Go). Shipped as per-platform binaries. See
   [`cli/README.md`](cli/README.md).
+- [`android/`](android/) — the Android library, published to Maven Central as
+  `app.founderping:widget`. See [`android/README.md`](android/README.md).
 
 ## Releases
 
@@ -41,6 +44,10 @@ project setup, widget install, topic design, and reading feedback back.
 - `founderping-<os>-<arch>.tar.gz` — CLI archive per platform.
 - `skill.tar.gz` — the installable skill bundle (see the prompt above).
 
-Run `fp sync_assets` in the main repo first so `skill/guide.md` and `skill/api.md`
-are current, then `make dist` and upload everything in `./dist` to a GitHub
+Run `fp sync_assets` in the main repo first so `skill/doc/` is current, then
+`make dist` and upload everything in `./dist` to a GitHub
 release. CI does this automatically on a `v*` tag (`.github/workflows/release.yml`).
+
+## License
+
+[MIT](LICENSE)

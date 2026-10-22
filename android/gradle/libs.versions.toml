@@ -6,8 +6,8 @@ junit = "4.13.2"
 
 [libraries]
 # The framework ships org.json, but unit tests run against the stub android.jar
-# where every method throws, so the real implementation has to be on the test
-# classpath.
+# where no method does anything, so the real implementation has to be on the
+# test classpath.
 json = { module = "org.json:json", version.ref = "json" }
 junit = { module = "junit:junit", version.ref = "junit" }
 

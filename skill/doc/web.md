@@ -1,4 +1,4 @@
-# FounderPing Web Widget — front-end guide
+# FounderPing Web Widget — integration guide
 
 ## 1. Quick start
 
@@ -49,13 +49,14 @@ you have been told about them. Pair the two calls at the moments that matter:
 
 You get a card on the Dashboard, plus Slack or Discord if the project connected
 either. The event name is the unit of quiet: the same name won't ring again for
-an hour, so a visitor bouncing between pages costs you one notification rather
-than twenty. Anything your page can notice can reach you —
+an hour, so a visitor bouncing back and forth costs you one notification rather
+than twenty. Anything your code can notice can reach you —
 `pricing_viewed`, `trial_expiring`, `started_chatting` — so pick the two or
 three where showing up in person changes the outcome.
 
 If you'd rather choose *everyone* who becomes reachable, turn **Automatic
-go-live** off in Settings; then `goLive()` is the only way anyone appears.
+go-live** off under **Live → Live settings**; then `goLive()` is the only way
+anyone appears.
 
 ### 1.3 Stand-in — let the AI ask
 
@@ -89,7 +90,7 @@ Worth doing once, early: walk your product and `mount()` every moment you might
 ever want feedback from — checkout complete, onboarding milestones, error
 states, feature discovery. You don't have to bind a Topic to each one on day
 one. What you get is a stable map of moments that anyone can wire up from the
-Dashboard afterwards, with no redeploy.
+Dashboard afterwards, without a release.
 
 ### 1.4 Identify your users
 
@@ -108,16 +109,18 @@ session; with it, someone's visits and devices collapse into one **User**.
 ## 2. How the widget works
 
 The widget renders in an isolated iframe, so it can't collide with your CSS or
-JavaScript. On load it fetches your project's Topics and Touchpoint bindings
-once and caches them, so every decision afterwards is instant and needs no
-server round-trip. The cache refreshes on its own, which is why Dashboard edits
-roll out without a redeploy.
+JavaScript.
+
+On load it fetches your project's Topics and Touchpoint bindings once and caches
+them, so every decision afterwards is instant and needs no server round-trip.
+The cache refreshes on its own, which is why Dashboard edits roll out without a
+release.
 
 **Your code names moments; the Dashboard decides what happens at them.** That
 split is the whole design. `mount("post_checkout")` raises a *candidate* — which
 Topic fires there, under which conditions, and whether anything appears at all
 is configuration, not code. So you place the calls once and retarget questions
-forever after without touching the front-end.
+forever after without touching your code.
 
 Which means a `mount()` may open its Topic, open something else that fired at
 the same instant, or show nothing. Between the call and the screen sit a
@@ -139,27 +142,25 @@ Every method is safe to call before the bundle has loaded. All of them except
 
 | Method | What it does |
 | --- | --- |
-| [`mount(name)`](#mountname) | Declares that a named Touchpoint moment just happened. |
-| [`setUser(user)`](#setuseruser) | Binds the session to one of your users, or clears it. |
+| [`mount(name)`](#mount) | Declares that a named Touchpoint moment just happened. |
+| [`setUser(user)`](#setuser) | Binds the session to one of your users, or clears it. |
 | [`goLive()`](#golive) | Makes this visitor reachable in person, right now. |
-| [`notifyIfLive(event, options?)`](#notifyifliveevent-options) | Tells you something happened to a reachable visitor. |
+| [`notifyIfLive(event, options?)`](#notifyiflive) | Tells you something happened to a reachable visitor. |
 | [`hide()`](#hide) | Puts the widget away without counting as a dismissal. |
 | [`destroy()`](#destroy) | Tears the widget instance down entirely. |
 
-### mount(name)
+### mount
 
 ```ts
 founderping.mount(name: string): FounderPing
 ```
 
-Safe to call repeatedly. Calls landing within about half a second of each other
-resolve together, so a burst can't produce a stack of dialogs.
+The argument is your identifier for the moment (`post_checkout`,
+`home_landing`), as registered in the Dashboard. Safe to call repeatedly. Calls
+landing within about half a second of each other resolve together, so a burst
+can't produce a stack of dialogs.
 
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | *required* | Your identifier for the moment (`post_checkout`, `home_landing`), as registered in the Dashboard. |
-
-### setUser(user)
+### setUser
 
 ```ts
 founderping.setUser(user?: { identifier: string | null } | null): FounderPing
@@ -173,16 +174,17 @@ Takes effect immediately and survives reloads.
 | `user` | `{ identifier: string \| null } \| null` | `undefined` | Omit it, or pass `null`, to go anonymous. An object is taken so custom user fields can be added later without breaking the signature. |
 | `user.identifier` | `string \| null` | *required* | Your stable id for the end user. Trimmed; empty or `null` resets to anonymous, which is what you want on logout. |
 
-### goLive()
+### goLive
 
 ```ts
 founderping.goLive(): FounderPing
 ```
 
-Sticks across navigations and reloads, lapsing about an hour later. Changes
-nothing on the visitor's screen — pair it with `notifyIfLive` to be told.
+Sticks across navigations and reloads, lapsing about an hour later.
+Changes nothing on the visitor's screen — pair it with `notifyIfLive` to be
+told.
 
-### notifyIfLive(event, options?)
+### notifyIfLive
 
 ```ts
 founderping.notifyIfLive(
@@ -195,13 +197,13 @@ founderping.notifyIfLive(
 connected, it waits; if the visitor never becomes reachable it is dropped, since
 an alert you can't act on in person is worse than none.
 
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| `event` | `string` | *required* | A slug for what happened, up to 32 characters matching `^[a-z0-9][a-z0-9_.-]*$`. Lowercased first, so `Pricing_Viewed` shares one quiet window with `pricing_viewed`. |
-| `options.quietMs` | `number` | `3600000` | How long this name then stays quiet, in ms. `0` for something you always want to hear. |
-| `options.note` | `string \| null` | `null` | One short line of your own to trail the notification. Cut at 120 characters. Never becomes the subject — who the alert is about is resolved server-side, because this string is untrusted. |
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `event` | *required* | A slug for what happened, up to 32 characters matching `^[a-z0-9][a-z0-9_.-]*$`. Lowercased first, so `Pricing_Viewed` shares one quiet window with `pricing_viewed`. |
+| `quietMs` | `3600000` | How long this name then stays quiet, in ms. `0` for something you always want to hear. |
+| `note` | none | One short line of your own to trail the notification. Cut at 120 characters. Never becomes the subject — who the alert is about is resolved server-side, because this string is untrusted. |
 
-### hide()
+### hide
 
 ```ts
 founderping.hide(): FounderPing
@@ -211,7 +213,7 @@ For getting out of the way of your own UI — a modal opening, a full-screen vie
 Unlike the user *closing* the widget this starts no quiet period, so automatic
 pop-ups resume normally.
 
-### destroy()
+### destroy
 
 ```ts
 founderping.destroy(): void
@@ -276,10 +278,10 @@ mount("…")  →  coalesce  →  guards  →  conditions  →  pick one Topic  
 ```
 
 **Coalesce.** `mount()` calls landing close together — including the sticky
-button's own auto-mount and a page-load restore — are collected into one window
-(`COALESCE_WINDOW_MS`) and resolved together. A **Proactive** Touchpoint can also
-be set to fire only a fraction of the time (`probability`); that dice roll
-happens here.
+button's own auto-mount and the restore when the widget loads — are collected
+into one window (`COALESCE_WINDOW_MS`) and resolved together. A **Proactive**
+Touchpoint can also be set to fire only a fraction of the time (`probability`);
+that dice roll happens here.
 
 **Guards**, checked before any content is chosen:
 
@@ -289,7 +291,7 @@ happens here.
 - **Quiet Guard** — if the user explicitly *closes* the widget, nothing
   auto-opens for `QUIET_GUARD_MS`.
 
-While a Guard holds, a page load just restores whatever the user already had.
+While a Guard holds, the widget only restores whatever the user already had.
 
 **Conditions & pacing**, both evaluated in the end user's local context:
 
@@ -300,8 +302,8 @@ While a Guard holds, a page load just restores whatever the user already had.
 - **Proactive pacing.** One project-wide setting, **"Minimum time between
   proactive pop-ups"** (Dashboard → **Stand-in**), throttles every proactive
   Topic together, so a project with many Touchpoints can't gang up on one user.
-  Off by default, capped at 7 days, measured from the last proactive pop-up — a
-  page refresh doesn't restart the clock. It paces proactive pop-ups only; chats
+  Off by default, capped at 7 days, measured from the last proactive pop-up
+  wherever it appeared. It paces proactive pop-ups only; chats
   the user opens themselves and Direct Chat have their own rules.
 
 **Picking one**, when several candidates survive:
@@ -337,9 +339,10 @@ new page just has to load the widget.
 
 The hand-off lasts as long as `FOCUS_GUARD_MS` from the last time that chat was
 shown or touched, and deliberately can't renew itself — restoring a chat isn't
-engagement, so the window keeps draining while the user browses. When it runs
-out the screen returns to the sticky button, and a new page is free to raise its
-own pop-up. That is also why a chat from yesterday never re-opens by itself.
+engagement, so the window keeps draining while the user moves around. When it
+runs out the widget returns to the sticky button, and whatever comes next is
+free to raise its own pop-up. That is also why a chat from yesterday never
+re-opens by itself.
 
 One caveat: the widget's memory is per browser origin, so a conversation doesn't
 carry across domains (`www.example.com` → `app.example.com` starts clean).
@@ -353,18 +356,18 @@ carry across domains (`www.example.com` → `app.example.com` starts clean).
 | `FOCUS_GUARD_MS` | **15 minutes** | How long an actively-used conversation is protected from a new `mount`. Resets on each qualifying interaction. |
 | `QUIET_GUARD_MS` | **1 day** | How long the widget stays silent after the user closes it. |
 | `LIVE_INITIAL_DWELL_MS` | **10 seconds** | How much *focused* time a visitor accumulates before automatic go-live lists them. Not counted with Automatic go-live off, nor when you call `goLive()`. |
-| `NOTIFY_DEFAULT_QUIET_MS` | **1 hour** | Default `quietMs`: how long one event name stays silent after notifying you. Per browser, so four open tabs still cost one notification. |
+| `NOTIFY_DEFAULT_QUIET_MS` | **1 hour** | Default `quietMs`: how long one event name stays silent after notifying you. Kept for the whole browser or app rather than per page, so four open tabs still cost one notification. |
 | `CONVERSATION_REUSE_WINDOW_MS` | **5 minutes** | Re-firing a Topic within this window of its last showing reopens the same conversation instead of starting a fresh one. |
 
 ### 5.5 When nothing appears
 
 In rough order of likelihood:
 
-1. **Allowed domains** are empty or don't cover this origin (§4.2) — nothing
-   loads at all, which looks exactly like nothing firing.
-2. **A Guard is active** — the user recently closed the widget, or is still
-   mid-conversation.
-3. **A per-binding Condition or cooldown** hasn't elapsed.
-4. **Proactive pacing** is still open from an earlier pop-up.
-5. **The Touchpoint's `probability`** rolled it out this time.
-6. **A CSP** on your page is blocking the bundle or its connections (§4.3).
+- **Allowed domains** are empty or don't cover this origin (§4.2) — nothing
+  loads at all, which looks exactly like nothing firing.
+- **A Guard is active** — the user recently closed the widget, or is still
+  mid-conversation.
+- **A per-binding Condition or cooldown** hasn't elapsed.
+- **Proactive pacing** is still open from an earlier pop-up.
+- **The Touchpoint's `probability`** rolled it out this time.
+- **A CSP** on your page is blocking the bundle or its connections (§4.3).
