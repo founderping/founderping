@@ -139,6 +139,20 @@ object FounderPing {
         started()?.crashRenderer()
     }
 
+    /**
+     * Load the widget from another deployment of the hosted page, one of
+     * FounderPing's own staging or dev servers, instead of production. For
+     * testing FounderPing itself: your app has no other page to point at.
+     *
+     * Each screen loads the page once, as it starts, so only screens that start
+     * afterwards pick [url] up. Call it before the first one does — in its
+     * `onCreate` — and to switch a running app, start its screens afresh.
+     */
+    @JvmStatic
+    fun useHostedPageForTesting(url: String) {
+        started()?.useHostedPage(url)
+    }
+
     private fun send(script: String) {
         started()?.send(script)
     }

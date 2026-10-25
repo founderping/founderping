@@ -12,20 +12,15 @@ import android.util.Log
 internal const val PROJECT_KEY_META = "app.founderping.PROJECT_KEY"
 
 /**
- * Lets a debug build point at staging. Not for shipping: the hosted page is the
- * only origin this shell trusts, and navigation anywhere else is refused.
- */
-internal const val HOSTED_PAGE_META = "app.founderping.HOSTED_PAGE"
-
-/**
  * The hosted page. Pinned into the binary deliberately: it takes no parameters
  * — every piece of configuration arrives over the bridge instead — so there is
  * nothing here to get wrong, and nothing in the URL worth reading off a log.
+ * Only [FounderPing.useHostedPageForTesting] moves off it.
  */
 private const val HOSTED_PAGE = "https://founderping.app/native"
 
-/** Everything every overlay shares, read once from the manifest as the app starts. */
-internal class WidgetConfig(
+/** Everything every overlay shares, read from the manifest as the app starts. */
+internal data class WidgetConfig(
     val projectKey: String,
     val appId: String,
     val hostedPage: String,
@@ -56,6 +51,9 @@ internal class WidgetConfig(
      */
     val debuggable: Boolean,
 ) {
+    /** The same app, with its widget loaded from [page] instead. */
+    fun withHostedPage(page: String) = copy(hostedPage = page, hostedOrigin = originOf(page))
+
     companion object {
         /** Null, with the fix in logcat, when the manifest names no project. */
         fun read(application: Application): WidgetConfig? {
@@ -69,18 +67,19 @@ internal class WidgetConfig(
                 )
                 return null
             }
-            val hostedPage = meta.getString(HOSTED_PAGE_META) ?: HOSTED_PAGE
             return WidgetConfig(
                 projectKey = projectKey,
                 appId = application.packageName,
-                hostedPage = hostedPage,
-                hostedOrigin = Uri.parse(hostedPage).let { HostedOrigin(it.scheme, it.host) },
+                hostedPage = HOSTED_PAGE,
+                hostedOrigin = originOf(HOSTED_PAGE),
                 voiceInput = declaresRecordAudio(application),
                 debuggable = (application.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0,
             )
         }
     }
 }
+
+private fun originOf(page: String) = Uri.parse(page).let { HostedOrigin(it.scheme, it.host) }
 
 private fun metaData(application: Application): Bundle = try {
     @Suppress("DEPRECATION")

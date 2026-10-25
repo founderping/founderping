@@ -18,11 +18,13 @@ import android.os.Looper
  * overlay.
  *
  * Lifecycle callbacks arrive on the UI thread and calls are posted to it, so this
- * state is only ever touched from that one thread.
+ * state is only ever touched from that one thread — all but [widget], which
+ * [useHostedPage] sets from wherever it is called.
  */
 internal class Overlays(
     private val application: Application,
-    private val widget: WidgetConfig,
+    /** What the next overlay is made with. */
+    @Volatile private var widget: WidgetConfig,
 ) : Application.ActivityLifecycleCallbacks {
 
     private val main = Handler(Looper.getMainLooper())
@@ -50,6 +52,15 @@ internal class Overlays(
 
     fun crashRenderer() {
         main.post { guarded { front?.let(overlays::get)?.crashRenderer() } }
+    }
+
+    /**
+     * For overlays made from now on; those already up keep the page they loaded.
+     * Set at once rather than posted: a screen asking from its `onCreate` starts,
+     * and gets its overlay, before anything posted from there would run.
+     */
+    fun useHostedPage(page: String) {
+        widget = widget.withHostedPage(page)
     }
 
     /**
