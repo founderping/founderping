@@ -13,6 +13,10 @@ at <https://founderping.app/doc/android.md>. The short version:
 implementation("app.founderping:widget:0.1.0")
 ```
 
+That fetches it prebuilt from Maven Central. To compile it from this
+repository's source along with your app instead, see
+[§4.4 of the guide](../skill/doc/android.md#44-building-from-source).
+
 ```xml
 <!-- AndroidManifest.xml, inside <application>: the library starts itself from this -->
 <meta-data android:name="app.founderping.PROJECT_KEY" android:value="pk_…" />

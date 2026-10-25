@@ -14,6 +14,9 @@ dependencies {
 }
 ```
 
+That fetches it prebuilt. Its source is open too, and your build can compile it
+from a clone instead: §4.4 shows how.
+
 It needs `minSdk` 24, and declares the `INTERNET` permission itself. The widget
 shows on Android 8.0 (API 26) and later. On Android 7 a WebView renders inside
 your app's own process, where its crash would be your app's, so there the
@@ -305,6 +308,47 @@ permission, granted at install and never prompted. If your manifest strips
 library permissions with `tools:node="remove"`, leave this one: without it the
 mic fails even once the user allows it, and the only trace is a `cr_media` line
 in logcat.
+
+### 4.4 Building from source
+
+The library's source is open, in
+[github.com/founderping/founderping](https://github.com/founderping/founderping),
+and your app can compile it from there instead of fetching the build on Maven
+Central — to read or change it, or because you build what you ship yourself.
+Clone it wherever suits, next to your project say:
+
+```sh
+git clone https://github.com/founderping/founderping.git
+```
+
+Its `android/` folder is a Gradle build of its own. Include that build in your
+`settings.gradle.kts`, and Gradle compiles the library from the clone in place
+of the download:
+
+```kotlin
+// settings.gradle.kts — the path is relative to this file
+includeBuild("../founderping/android") {
+    dependencySubstitution {
+        substitute(module("app.founderping:widget")).using(project(":founderping"))
+    }
+}
+```
+
+Leave the `implementation("app.founderping:widget:0.1.0")` line from §1.1 as it
+is: the substitution stands in for it, whatever version it names, and every
+edit to the clone is in your next build. `main` is the newest source, so it can
+be ahead of the release on Maven Central.
+
+Being a build of its own, the clone needs two things from you:
+
+- **Where your Android SDK is.** It does not read your project's
+  `local.properties`: copy that file into its `android/` folder, where git
+  ignores it, or set `ANDROID_HOME`. Otherwise Gradle stops with
+  `SDK location not found`.
+- **Your Android Gradle plugin version.** Gradle allows one per build, and the
+  clone names its own: `agp` in `android/gradle/libs.versions.toml`. If yours is
+  different, set it to yours; otherwise the build stops with
+  `Using multiple versions of the Android Gradle plugin(…) in the same build is not allowed`.
 
 ---
 
