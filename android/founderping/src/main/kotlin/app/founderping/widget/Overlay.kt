@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.webkit.WebView
 import android.widget.FrameLayout
 
@@ -138,6 +139,7 @@ internal class Overlay(private val activity: Activity, private val widget: Widge
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 setWebViewRenderProcessClient(OverlayRenderProcessClient(::onRendererResponsive))
             }
+            setOnApplyWindowInsetsListener(::keepClearOfKeyboard)
             // Must precede loadUrl: the page reads this bridge as it parses,
             // and refuses to start the widget if it is not there yet.
             addJavascriptInterface(bridge, NativeBridge.GLOBAL)
@@ -176,6 +178,30 @@ internal class Overlay(private val activity: Activity, private val widget: Widge
             pageReady = false
         }
         return true
+    }
+
+    /**
+     * Keeps the overlay out from under the on-screen keyboard, so the page sees
+     * a viewport that ends where the keyboard begins and moves the panel up
+     * into it.
+     *
+     * Most windows have done this already: one that resizes for the keyboard —
+     * the default for apps targeting below Android 15 — shrinks the content view
+     * the overlay fills, and consumes the keyboard's inset on the way down. An
+     * edge-to-edge window doesn't resize, and leaves the inset to whoever draws
+     * under the keyboard. Below Android 11 there is no inset for the keyboard
+     * alone, and nothing makes a window edge-to-edge there.
+     */
+    private fun keepClearOfKeyboard(page: View, insets: WindowInsets): WindowInsets = guarded(fallback = insets) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val keyboardPx = insets.getInsets(WindowInsets.Type.ime()).bottom
+            val layout = page.layoutParams as ViewGroup.MarginLayoutParams
+            if (layout.bottomMargin != keyboardPx) {
+                layout.bottomMargin = keyboardPx
+                page.layoutParams = layout
+            }
+        }
+        page.onApplyWindowInsets(insets)
     }
 
     /**
