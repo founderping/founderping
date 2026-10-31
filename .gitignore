@@ -7,6 +7,10 @@
 *.test
 *.out
 
+# Swift package build output, and the state Xcode keeps beside Package.swift
+/.build/
+/.swiftpm/
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

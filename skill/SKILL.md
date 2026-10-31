@@ -1,6 +1,6 @@
 ---
 name: founderping
-description: Drive FounderPing — a user-feedback / thought-capture system where the developer, or an AI stand-in in their place, talks with users inside their product — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts live in the bundled doc/guide.md, the integration code in doc/web.md or doc/android.md, and every endpoint in doc/backend_api.md.
+description: Drive FounderPing — a user-feedback / thought-capture system where the developer, or an AI stand-in in their place, talks with users inside their product — from the CLI. Use whenever a developer wants to set up user feedback in their product, design a new feedback flow (topics & touchpoints, in-product interviews or surveys), or review, monitor, and analyze the feedback that has come back. Concepts live in the bundled doc/guide.md, the integration code in doc/web.md, doc/android.md or doc/ios.md, and every endpoint in doc/backend_api.md.
 ---
 
 # FounderPing
@@ -28,8 +28,8 @@ task below.
 - **Concepts, the full workflow, widget integration, topic-design craft, and every
   configurable option:** [`doc/guide.md`](doc/guide.md) — read it; it's the source of truth.
 - **Putting the widget in their product:** [`doc/web.md`](doc/web.md) for a website or
-  web app, [`doc/android.md`](doc/android.md) for an Android app — the install, every
-  method, and what to check when nothing appears.
+  web app, [`doc/android.md`](doc/android.md) for an Android app, [`doc/ios.md`](doc/ios.md)
+  for an iOS app — the install, every method, and what to check when nothing appears.
 - **Every endpoint, field, and example payload:** [`doc/backend_api.md`](doc/backend_api.md).
 - Website: https://founderping.app
 
@@ -149,9 +149,9 @@ feedback flow, together:
    guide for their platform, which shows where `mount()` / `setUser()` calls belong.
    Use them to get both the design and the wiring right.
 3. **Wire it in their way.** If the flow needs the widget, integrate it following
-   the guide for what this codebase is — [`doc/web.md`](doc/web.md) or
-   [`doc/android.md`](doc/android.md) — and *this project's own* conventions; don't
-   impose a workflow. The
+   the guide for what this codebase is — [`doc/web.md`](doc/web.md),
+   [`doc/android.md`](doc/android.md) or [`doc/ios.md`](doc/ios.md) — and *this
+   project's own* conventions; don't impose a workflow. The
    widget's look — its avatar/logo and accent color — isn't settable from the CLI
    (it's an image upload); if they want to brand it beyond the default, point them
    to the Dashboard → **Settings** → **"Meet users as:"** card.

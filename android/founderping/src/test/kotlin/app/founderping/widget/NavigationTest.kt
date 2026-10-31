@@ -18,32 +18,37 @@ class NavigationTest {
         return decideNavigation(scheme, host, HOSTED, hasGesture, isRedirect)
     }
 
+    /** An automatic redirect, the only way the hosted page itself is ever navigated to. */
+    private fun redirect(url: String) = decide(url, hasGesture = false, isRedirect = true)
+
     @Test
-    fun `the hosted page stays in the WebView`() {
-        assertEquals(Navigation.ALLOW, decide("https://founderping.app/native"))
-        assertEquals(Navigation.ALLOW, decide("https://founderping.app/native/anything"))
+    fun `a redirect within the hosted origin stays in the WebView`() {
+        assertEquals(Navigation.ALLOW, redirect("https://founderping.app/native/"))
+        assertEquals(Navigation.ALLOW, redirect("https://founderping.app/?showSignIn=true"))
     }
 
     @Test
     fun `host comparison ignores case`() {
-        assertEquals(Navigation.ALLOW, decide("https://FounderPing.app/native"))
+        assertEquals(Navigation.ALLOW, redirect("https://FounderPing.app/native"))
+    }
+
+    @Test
+    fun `a tapped link to the hosted origin still goes to the browser`() {
+        // In production the privacy policy is on the hosted origin. Loaded in
+        // here it would replace the widget with an opaque page.
+        assertEquals(Navigation.OPEN_IN_BROWSER, decide("https://founderping.app/legal/privacy"))
+        assertEquals(Navigation.OPEN_IN_BROWSER, decide("https://founderping.app/legal/privacy", hasGesture = false))
     }
 
     @Test
     fun `the hosted host under another scheme is not the hosted page`() {
-        // Plain http is a tap away from the browser, like any other web link;
-        // file: and content: read the device, so they never load at all.
+        // Plain http is a tap away from the browser, like any other web link,
+        // but never somewhere to be redirected to; file: and content: read the
+        // device, so they never load at all.
         assertEquals(Navigation.OPEN_IN_BROWSER, decide("http://founderping.app/native"))
+        assertEquals(Navigation.BLOCK, redirect("http://founderping.app/native"))
         assertEquals(Navigation.BLOCK, decide("file://founderping.app/native"))
         assertEquals(Navigation.BLOCK, decide("content://founderping.app/native"))
-    }
-
-    @Test
-    fun `a same-host redirect is still the hosted page`() {
-        assertEquals(
-            Navigation.ALLOW,
-            decide("https://founderping.app/?showSignIn=true", hasGesture = false, isRedirect = true),
-        )
     }
 
     @Test
@@ -73,10 +78,7 @@ class NavigationTest {
     fun `an automatic off-site redirect is blocked`() {
         // The shape of a real incident: /native was undeployed and bounced to
         // the marketing site. That must not launch a browser by itself.
-        assertEquals(
-            Navigation.BLOCK,
-            decide("https://example.com/?showSignIn=true", hasGesture = false, isRedirect = true),
-        )
+        assertEquals(Navigation.BLOCK, redirect("https://example.com/?showSignIn=true"))
     }
 
     @Test
@@ -100,7 +102,7 @@ class NavigationTest {
     @Test
     fun `a hostless url is not matched against a null hosted host`() {
         // Two nulls must not read as "same host" if the page URL was malformed.
-        assertEquals(Navigation.BLOCK, decideNavigation("about", null, HostedOrigin(null, null), true, false))
+        assertEquals(Navigation.BLOCK, decideNavigation("https", null, HostedOrigin("https", null), false, true))
     }
 
     @Test
