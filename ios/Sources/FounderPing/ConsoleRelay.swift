@@ -52,7 +52,11 @@ private func relaySource(handler: String) -> String {
       var native = window.webkit.messageHandlers.\(handler);
       function post(level, values) {
         var text = Array.prototype.map.call(values, function (value) {
-          if (value instanceof Error) return value.stack || String(value);
+          if (value instanceof Error) {
+            // WebKit's stack leaves out the message that V8's starts with.
+            var stack = value.stack || "", message = String(value);
+            return stack.indexOf(message) === 0 ? stack : stack ? message + "\\n" + stack : message;
+          }
           if (value && typeof value === "object") {
             try { return JSON.stringify(value); } catch (e) { return String(value); }
           }

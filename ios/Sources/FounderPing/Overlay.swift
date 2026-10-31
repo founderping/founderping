@@ -50,6 +50,9 @@ final class Overlay {
         onProcessGone: { [weak self] in self?.lose() }
     )
     private var page = Page.loading
+    /// When the page now loading was asked for. How long it takes to come up is
+    /// logged, since a slow network shows up nowhere else.
+    private var loadStarted = Date.now
     /// Calls made before the page could run them, replayed once it can.
     private var queued = PendingCalls()
     /// The screen the user is on, as the page knows it.
@@ -144,6 +147,7 @@ final class Overlay {
     /// screen the user is on now rather than the one the scene first showed.
     private func load() {
         page = .loading
+        loadStarted = .now
         scripts.removeAllUserScripts()
         if config.debuggable { scripts.addUserScript(ConsoleRelay.script) }
         scripts.addUserScript(bridge.script(screen: screen))
@@ -152,6 +156,7 @@ final class Overlay {
 
     private func pageReady() {
         page = .ready
+        logger.info("the hosted page is up, \(Date.now.timeIntervalSince(self.loadStarted), format: .fixed(precision: 1), privacy: .public) s after it was asked for")
         // Revealed only now. A network failure or a redirect lands some *other*
         // page in this WebView, and whatever that page paints — an error page,
         // our own marketing site — would be an opaque sheet over the host app
