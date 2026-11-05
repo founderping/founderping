@@ -1,14 +1,9 @@
 package app.founderping.widget
 
 /**
- * Runs [block] where the framework calls into this library, so that a failure
- * there turns FounderPing off instead of crashing the app around it. This code
- * runs in the host's process, mostly on its main thread, where an uncaught
- * exception is the host's crash, reported against one of its own activities.
- *
- * Anything short of the VM itself failing is caught. Running out of memory is
- * the process's condition rather than ours, and swallowing it would only move
- * the crash somewhere harder to read.
+ * Where the framework calls in. A failure turns the library off instead of
+ * crashing the host. [VirtualMachineError] is rethrown: swallowing an OOM only
+ * moves the crash.
  */
 internal inline fun <T> guarded(fallback: T, block: () -> T): T =
     try {

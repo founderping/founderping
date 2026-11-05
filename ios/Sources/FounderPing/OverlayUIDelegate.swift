@@ -1,13 +1,7 @@
 import WebKit
 
-/// Passes the microphone to voice input: only ever the microphone, and only
-/// ever to the hosted page.
-///
-/// Declaring `NSMicrophoneUsageDescription` is your app's decision, and the
-/// widget offers no mic without it. Granting here spares the user a prompt from
-/// WebKit naming the hosted page, on top of the one iOS shows in your app's
-/// words on their first tap of the mic. If they decline that one, the widget
-/// tells them where to allow it.
+/// Only the microphone, only for the hosted page. Granting here skips a second
+/// prompt, from WebKit, naming the hosted page.
 @MainActor
 final class OverlayUIDelegate: NSObject, WKUIDelegate {
 
@@ -28,7 +22,7 @@ final class OverlayUIDelegate: NSObject, WKUIDelegate {
     ) {
         let refusal: String? =
             // Without the usage description, iOS ends the app the moment
-            // anything in it touches the microphone.
+            // anything touches the microphone.
             if !voiceInput { "the app declares no NSMicrophoneUsageDescription" }
             else if type != .microphone { "only the microphone is ever passed on" }
             else if !hosted.matches(origin) { "\(origin.protocol)://\(origin.host) is not the hosted page" }

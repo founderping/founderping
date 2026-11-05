@@ -3,15 +3,8 @@ package app.founderping.widget
 import org.json.JSONArray
 
 /**
- * The part of the screen the widget currently claims, in device pixels.
- *
- * The widget paints into a fullscreen transparent WebView. Left alone, that
- * view would swallow every touch meant for the app underneath it, so the page
- * keeps reporting the rectangles it actually paints on and everything outside
- * them is passed through.
- *
- * Immutable, because it is built on the WebView's JavaScript thread and read on
- * the UI thread.
+ * Rectangles the widget claims, in device pixels. Immutable: built on the
+ * JavaScript thread, read on the UI thread.
  */
 internal class HitRegion private constructor(private val rects: List<Rect>) {
 
@@ -26,15 +19,9 @@ internal class HitRegion private constructor(private val rects: List<Rect>) {
         val EMPTY = HitRegion(emptyList())
 
         /**
-         * Parse a `setHitRegion` payload: `[{x, y, width, height}, …]` in **CSS
-         * pixels relative to the WebView**, which is the only unit the page can
-         * measure in. [density] converts them to the device pixels a
-         * `MotionEvent` reports.
-         *
-         * Anything malformed yields [EMPTY] instead of throwing. This runs on
-         * the JavaScript thread, where an exception would cross back into the
-         * WebView rather than anywhere useful, and claiming nothing at least
-         * leaves the host app fully usable.
+         * `[{x, y, width, height}, …]` in CSS pixels. [density] makes them device
+         * pixels. Malformed yields [EMPTY]: this runs on the JavaScript thread,
+         * where a throw goes nowhere useful, and claiming nothing leaves the app usable.
          */
         fun parse(json: String, density: Float): HitRegion = try {
             val array = JSONArray(json)

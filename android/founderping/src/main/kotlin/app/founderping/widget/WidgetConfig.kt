@@ -12,10 +12,8 @@ import android.util.Log
 internal const val PROJECT_KEY_META = "app.founderping.PROJECT_KEY"
 
 /**
- * The hosted page. Pinned into the binary deliberately: it takes no parameters
- * — every piece of configuration arrives over the bridge instead — so there is
- * nothing here to get wrong, and nothing in the URL worth reading off a log.
- * Only [FounderPing.useHostedPageForTesting] moves off it.
+ * No parameters: config arrives over the bridge. Only
+ * [FounderPing.useHostedPageForTesting] moves off it.
  */
 private const val HOSTED_PAGE = "https://founderping.app/native"
 
@@ -26,28 +24,14 @@ internal data class WidgetConfig(
     val hostedPage: String,
     val hostedOrigin: HostedOrigin,
     /**
-     * Whether the app declares `RECORD_AUDIO` at all, which decides whether the
-     * widget offers voice input.
-     *
-     * Read off the manifest rather than taken as a parameter, so there is no
-     * second opinion to keep in sync: an undeclared permission cannot be granted
-     * — `requestPermissions` for one is refused outright — so this is a fact
-     * about the app, and any flag saying otherwise would simply be wrong.
-     *
-     * Not the same question as `checkSelfPermission`, which asks whether the user
-     * has granted it *now* and can change between one tap and the next. That one
-     * belongs to [OverlayChromeClient], and a declared but not yet granted
-     * permission still shows the mic button, because tapping it is what asks.
+     * Whether the manifest declares `RECORD_AUDIO`. An undeclared permission
+     * cannot be granted, so a flag would only be able to be wrong. Whether the
+     * user has granted it *now* is [OverlayChromeClient]'s question.
      */
     val voiceInput: Boolean,
     /**
-     * Whether the app we are installed in is itself a debug build.
-     *
-     * Two debugging affordances hang off this, and in a shipped app both would
-     * be liabilities rather than aids: a release build must not become
-     * inspectable over `chrome://inspect` merely because it embedded us, and it
-     * must not narrate the page's console — which carries whatever the user is
-     * telling us — into a log that any connected cable can read.
+     * Debug build of the host. Release stays uninspectable and doesn't log the
+     * page console, which carries what the user said.
      */
     val debuggable: Boolean,
 ) {
@@ -99,8 +83,7 @@ private fun declaresRecordAudio(application: Application): Boolean = try {
     )
     info.requestedPermissions?.contains(Manifest.permission.RECORD_AUDIO) == true
 } catch (e: PackageManager.NameNotFoundException) {
-    // Cannot happen for our own package; if it somehow does, the safe read is
-    // "no microphone" — a missing button beats a button that does nothing.
+    // Cannot happen for our own package. A missing mic button beats one that does nothing.
     Log.w(TAG, "could not read own manifest permissions", e)
     false
 }

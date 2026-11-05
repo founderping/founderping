@@ -1,15 +1,7 @@
 import WebKit
 
-/// In a debug build, the page's console — the widget's own frame included — in
-/// your Xcode console.
-///
-/// Worth having because the page is hard to see into: it is transparent, it
-/// passes touches through, and the integration mistake it explains most often,
-/// a bundle ID missing from Allowed iOS Apps, it explains only there. Safari's
-/// Web Inspector shows the same and more, once someone thinks to open it.
-///
-/// Never in a release build: the console carries whatever the user is telling
-/// us.
+/// Debug builds only: the page console in Xcode, widget frame included. A
+/// release build would log what the user said.
 @MainActor
 final class ConsoleRelay: NSObject, WKScriptMessageHandler {
 
@@ -53,7 +45,7 @@ private func relaySource(handler: String) -> String {
       function post(level, values) {
         var text = Array.prototype.map.call(values, function (value) {
           if (value instanceof Error) {
-            // WebKit's stack leaves out the message that V8's starts with.
+            // WebKit's stack omits the message V8's starts with.
             var stack = value.stack || "", message = String(value);
             return stack.indexOf(message) === 0 ? stack : stack ? message + "\\n" + stack : message;
           }

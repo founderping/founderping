@@ -3,46 +3,13 @@ import os
 
 let logger = Logger(subsystem: "app.founderping", category: "FounderPing")
 
-/// The FounderPing feedback widget, running inside your app.
-///
-/// The widget itself is the same web widget that runs on the web; this package
-/// is the shell around it. It lays a transparent WebView over each of your
-/// window scenes and passes every touch the widget is not using straight
-/// through, so your own UI stays live while the panel is open.
-///
-/// Name your project in your Info.plist:
-///
-/// ```xml
-/// <key>FounderPingProjectKey</key>
-/// <string>pk_…</string>
-/// ```
-///
-/// start the widget as your app launches:
-///
-/// ```swift
-/// FounderPing.start()
-/// ```
-///
-/// and then, wherever the moment happens:
-///
-/// ```swift
-/// FounderPing.mount("post_checkout")
-/// ```
-///
-/// Every call is safe from any thread, at any time: it goes to the scene in
-/// front, or waits for the next one to come up.
-///
-/// Before any of this works, add your bundle ID to **Allowed iOS Apps** in the
-/// FounderPing dashboard (Settings → Project). Projects reject iOS traffic
-/// until they list at least one app.
+/// Shell around the web widget: a transparent WebView over each window scene.
+/// `start()` once at launch, from the Info.plist project key; calls are safe
+/// from any thread and wait for a scene when none is in front. The bundle ID
+/// has to be listed under Allowed iOS Apps or every request is rejected.
 public enum FounderPing {
 
-    /// Start the widget for the project your Info.plist names. Once, as your app
-    /// launches — in `application(_:didFinishLaunchingWithOptions:)`, or your
-    /// `App`'s initializer; calls after the first change nothing.
-    ///
-    /// Below iOS 17 it stays off, with a line in the log saying so, and every
-    /// other call does nothing.
+    /// Once, at launch. Later calls change nothing. Below iOS 17 it stays off.
     public static func start() {
         DispatchQueue.main.async {
             if #available(iOS 17, *) {
@@ -53,54 +20,40 @@ public enum FounderPing {
         }
     }
 
-    /// Show the touchpoint registered under `touchpoint` in the dashboard.
+    /// Show the touchpoint `touchpoint`.
     public static func mount(_ touchpoint: String) {
         send("founderping.mount(\(javaScriptLiteral(touchpoint)))")
     }
 
-    /// Bind the session to one of your own user ids, or pass nil on logout to
-    /// fall back to an anonymous session.
+    /// Bind the session to one of your user ids. Nil goes back to anonymous.
     public static func setUser(_ identifier: String?) {
         send("founderping.setUser(\(javaScriptLiteral(["identifier": identifier])))")
     }
 
-    /// Put this user on your Live page now, on your say-so: the step automatic
-    /// go-live takes after about ten seconds on screen, so it needs no wait and
-    /// works with automatic go-live turned off. Sticks as they move through your
-    /// app, for about an hour. Silent by itself — pair it with `notifyIfLive`
-    /// to be told.
+    /// Erase this visitor's conversations, server and device. A failure leaves
+    /// both, so call it again.
+    public static func deleteData() {
+        send("founderping.deleteData()")
+    }
+
+    /// Make this user reachable now. Silent; pair with `notifyIfLive` to be told.
     public static func goLive() {
         send("founderping.goLive()")
     }
 
-    /// Tell yourself something worth your attention happened to this user: a
-    /// card on your dashboard, plus Slack or Discord if the project connected
-    /// either.
-    ///
-    /// `event` is a slug such as `checkout_failed`, and the quiet window is kept
-    /// per event: the same one stays silent for `quietMs` afterwards — an hour
-    /// unless you say otherwise, `0` to hear every one. `note` is one short line
-    /// of your own to trail it.
-    ///
-    /// Only sends once the user is live, waiting if that has not happened yet
-    /// and dropping it if it never does, so the ordinary call follows `goLive`.
+    /// Tell yourself `event` happened, once this user is live. The same event
+    /// stays quiet for `quietMs` (an hour if omitted).
     public static func notifyIfLive(_ event: String, note: String? = nil, quietMs: Int? = nil) {
         let options = NotifyOptions(note: note, quietMs: quietMs)
         send("founderping.notifyIfLive(\(javaScriptLiteral(event)),\(javaScriptLiteral(options)))")
     }
 
-    /// Put the widget away for now — while a modal or full-screen view of your
-    /// own is up, say. Unlike the user closing it, this starts no quiet period.
+    /// Put the widget away. Unlike the user closing it, this starts no quiet period.
     public static func hide() {
         send("founderping.hide()")
     }
 
-    /// Load the widget from another deployment of the hosted page, one of
-    /// FounderPing's own staging or dev servers, instead of production. For
-    /// testing FounderPing itself: your app has no other page to point at.
-    ///
-    /// Every widget already up starts over from `page`, and every one after
-    /// loads it too. Call it after `start()`.
+    /// Load `page` instead of production, including widgets already up. Call after `start()`.
     public static func useHostedPageForTesting(_ page: URL) {
         DispatchQueue.main.async {
             if #available(iOS 17, *) { running()?.useHostedPage(page) }
@@ -113,8 +66,7 @@ public enum FounderPing {
         }
     }
 
-    /// Nil while the widget is not running, with a line in the log saying the
-    /// call went nowhere.
+    /// Nil while not running; the log line says why the call went nowhere.
     @available(iOS 17, *)
     @MainActor
     private static func running() -> Overlays? {

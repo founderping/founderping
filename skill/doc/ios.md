@@ -190,6 +190,7 @@ goes nowhere, with a line in the log saying so.
 | [`start()`](#start) | Starts the widget, once, as your app launches. |
 | [`mount(_:)`](#mount) | Declares that a named Touchpoint moment just happened. |
 | [`setUser(_:)`](#setuser) | Binds the session to one of your users, or clears it. |
+| [`deleteData()`](#deletedata) | Erases this visitor's conversations. |
 | [`goLive()`](#golive) | Makes this user reachable in person, right now. |
 | [`notifyIfLive(_:note:quietMs:)`](#notifyiflive) | Tells you something happened to a reachable user. |
 | [`hide()`](#hide) | Puts the widget away without counting as a dismissal. |
@@ -233,6 +234,18 @@ Takes effect immediately and survives restarts.
 
 `identifier` is your stable id for the end user. Trimmed; empty or `nil`
 resets to anonymous, which is what you want on logout.
+
+### deleteData
+
+Call it from your account-deletion flow. It erases the conversations of the
+session on this device and, when that session was bound with `setUser`, every
+other session in the project bound to the same id. An anonymous session erases
+only itself. The copy on the device goes with it. A failure leaves both in
+place and logs a warning, so call it again.
+
+```swift
+FounderPing.deleteData()
+```
 
 ### goLive
 
@@ -324,6 +337,30 @@ array in its Info.plist — WebKit withholds the scripts and messages the packag
 relies on from every domain outside that array, and the widget never starts.
 Add `founderping.app` to it, where it counts toward the limit of ten. An app
 without that key has nothing to do.
+
+### 4.5 App privacy
+
+App Store Connect → **App Privacy** is a form you fill in. The App Store
+product page shows the result. For what the widget itself sends, tick each of
+these as **linked to the user**, **not used for tracking**:
+
+| Data type | When | Purpose |
+| --- | --- | --- |
+| Customer Support | Always. The chat text. | App Functionality |
+| User ID | Only if you call `setUser` | App Functionality |
+| Product Interaction | Always. Opens, closes, whether a message was voice | Analytics |
+| Coarse Location | Always. Country, from a truncated IP address | App Functionality |
+
+The package's privacy manifest declares the same four, so Xcode's privacy
+report agrees with your answers.
+
+Audio Data is not a row. The recording is sent to be transcribed and then
+discarded, which Apple treats as not collected when nothing is kept after the
+request. The transcript is the chat text, and it is already under Customer
+Support.
+
+`deleteData()` is what you call from your in-app account deletion so the
+widget's copy of that user's data goes too.
 
 ---
 

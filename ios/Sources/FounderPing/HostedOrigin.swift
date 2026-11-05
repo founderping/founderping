@@ -1,12 +1,7 @@
 import Foundation
 import WebKit
 
-/// Where the hosted page lives: the one origin this shell lets into the
-/// WebView's main frame, the only one it takes calls from, and the only one it
-/// passes the microphone to.
-///
-/// Scheme as well as host, because the same host is somewhere else entirely
-/// over plain `http`, which anything in transit can rewrite.
+/// Scheme and host. The same host over plain `http` is a different place.
 struct HostedOrigin {
     /// Lowercase, as the page reads its own location, and empty when unknown.
     let scheme: String

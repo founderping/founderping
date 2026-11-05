@@ -1,25 +1,14 @@
 import UIKit
 import WebKit
 
-/// Above anything the window stacks over the overlay later — a presented
-/// sheet, an alert, a new root view controller — so the widget is drawn over it
-/// from the moment it arrives. Taps follow at the next check (see `Overlays`),
-/// since UIKit hit-tests in subview order whatever the layer order.
+/// Drawn above whatever the window stacks on later. Taps follow at the next
+/// check: UIKit hit-tests in subview order, ignoring zPosition.
 private let overlayZPosition: CGFloat = 1000
 
-/// The widget over one window scene: a transparent `PassthroughWebView`
-/// holding the hosted page, in a `PassthroughContainer` over everything in the
-/// scene's window.
+/// The widget over one scene, for as long as the scene is connected.
 ///
-/// Inside your window rather than in one of its own. A window of its own would
-/// take over the status bar and the orientations the screen may turn to while
-/// it is up, both of which are your view controllers' to decide; inside yours,
-/// they stay theirs, and the page's text field takes the keyboard without the
-/// key window changing hands.
-///
-/// One per scene, kept for as long as the scene is connected, so the widget —
-/// and anything the user has open in it — stays put across every screen,
-/// every presentation and every trip to the background.
+/// Inside the host window. A window of its own would take the status bar, the
+/// allowed orientations, and the key window the keyboard follows.
 @available(iOS 17, *)
 @MainActor
 final class Overlay {
@@ -50,12 +39,9 @@ final class Overlay {
         onProcessGone: { [weak self] in self?.lose() }
     )
     private var page = Page.loading
-    /// When the page now loading was asked for. How long it takes to come up is
-    /// logged, since a slow network shows up nowhere else.
+    /// When the page now loading was asked for. A slow load shows up nowhere else.
     private var loadStarted = Date.now
-    /// Calls made before the page could run them, replayed once it can.
     private var queued = PendingCalls()
-    /// The screen the user is on, as the page knows it.
     private var screen: String
 
     init(config: WidgetConfig, dataStore: WKWebsiteDataStore, window: UIWindow) {
@@ -81,8 +67,7 @@ final class Overlay {
         if page == .ready { run(script) } else { queued.add(script) }
     }
 
-    /// Keeps the overlay over everything in `window`, and the page told which
-    /// screen the user is on.
+    /// Above everything in `window`, and the page told which screen is showing.
     func cover(_ window: UIWindow) {
         if container.superview !== window {
             attach(to: window)
@@ -96,12 +81,8 @@ final class Overlay {
         }
     }
 
-    /// The scene is in front again, and the page comes back if it was lost
-    /// while the scene was out of sight. Not at the moment it went: the usual
-    /// cause is iOS reclaiming memory from an app in the background, and loading
-    /// the page into the pressure that just ended it could repeat on a loop. A
-    /// scene coming to the front is the user wanting it, with the memory to
-    /// show it.
+    /// In front again. Reload a page lost out of sight here, not when it died:
+    /// reloading into that memory pressure loops.
     func resume() {
         if page == .lost { load() }
     }
@@ -120,19 +101,13 @@ final class Overlay {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = dataStore
         configuration.userContentController = scripts
-        // Voice replies play without a preceding tap.
         configuration.mediaTypesRequiringUserActionForPlayback = []
 
         let webView = PassthroughWebView(frame: .zero, configuration: configuration)
-        // Hidden until the page identifies itself over the bridge.
         webView.isHidden = true
-        // The overlay must never paint a background: your app has to show
-        // through everywhere the widget is not drawing.
         webView.isOpaque = false
         webView.backgroundColor = .clear
         webView.scrollView.backgroundColor = .clear
-        // The proper way to debug this page: Safari's Develop menu, for the
-        // full Web Inspector on the overlay.
         webView.isInspectable = inspectable
         return webView
     }
@@ -143,8 +118,7 @@ final class Overlay {
         window.addSubview(container)
     }
 
-    /// The bridge is rebuilt for every load, so the page starts out on the
-    /// screen the user is on now rather than the one the scene first showed.
+    /// The bridge is rebuilt per load, so the page starts on the screen showing now.
     private func load() {
         page = .loading
         loadStarted = .now
@@ -157,11 +131,8 @@ final class Overlay {
     private func pageReady() {
         page = .ready
         logger.info("the hosted page is up, \(Date.now.timeIntervalSince(self.loadStarted), format: .fixed(precision: 1), privacy: .public) s after it was asked for")
-        // Revealed only now. A network failure or a redirect lands some *other*
-        // page in this WebView, and whatever that page paints — an error page,
-        // our own marketing site — would be an opaque sheet over the host app
-        // while touches still pass through it, since a foreign page never
-        // reports a hit region. Only our page knows to ask for a config.
+        // A foreign page never asks for a config, and revealing it would paint
+        // an opaque sheet over the app.
         webView.isHidden = false
         // The screen may have changed while the page was loading.
         run(NativeBridge.screenUpdate(screen))

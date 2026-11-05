@@ -151,7 +151,10 @@ feedback flow, together:
 3. **Wire it in their way.** If the flow needs the widget, integrate it following
    the guide for what this codebase is — [`doc/web.md`](doc/web.md),
    [`doc/android.md`](doc/android.md) or [`doc/ios.md`](doc/ios.md) — and *this
-   project's own* conventions; don't impose a workflow. The
+   project's own* conventions; don't impose a workflow. If the app lets users
+   delete their account, call `deleteData()` from that flow; an app headed for
+   the App Store or Google Play also needs the privacy answers in §4.5 of its
+   guide. The
    widget's look — its avatar/logo and accent color — isn't settable from the CLI
    (it's an image upload); if they want to brand it beyond the default, point them
    to the Dashboard → **Settings** → **"Meet users as:"** card.

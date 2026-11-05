@@ -1,15 +1,11 @@
 import UIKit
 
-/// What the overlay puts in your window: a view filling it that claims no
-/// touch of its own, holding `content` within the window's safe area — the
-/// widget keeps clear of nothing by itself — and above the keyboard, so the
-/// page sees a viewport that ends where the keyboard begins and moves the
-/// panel up into it.
+/// Fills the window, claims no touch of its own, and holds the page inside the
+/// safe area and above the keyboard.
 ///
-/// The keyboard is why it exists. A window's own keyboard layout guide is
-/// never laid out: it stays zero-sized at the top of the safe area, and
-/// anything pinned to it collapses to nothing. A view inside the window gets
-/// a working one.
+/// A window's own keyboard layout guide is never laid out — it stays zero at
+/// the top of the safe area — so the page has to live in a view that has a
+/// working one.
 final class PassthroughContainer: UIView {
 
     init(holding content: UIView) {

@@ -172,6 +172,7 @@ optional argument.
 | --- | --- |
 | [`mount(touchpoint)`](#mount) | Declares that a named Touchpoint moment just happened. |
 | [`setUser(identifier)`](#setuser) | Binds the session to one of your users, or clears it. |
+| [`deleteData()`](#deletedata) | Erases this visitor's conversations. |
 | [`goLive()`](#golive) | Makes this user reachable in person, right now. |
 | [`notifyIfLive(event, note?, quietMs?)`](#notifyiflive) | Tells you something happened to a reachable user. |
 | [`hide()`](#hide) | Puts the widget away without counting as a dismissal. |
@@ -203,6 +204,18 @@ Takes effect immediately and survives restarts.
 
 `identifier` is your stable id for the end user. Trimmed; empty or `null`
 resets to anonymous, which is what you want on logout.
+
+### deleteData
+
+Call it from your account-deletion flow. It erases the conversations of the
+session on this device and, when that session was bound with `setUser`, every
+other session in the project bound to the same id. An anonymous session erases
+only itself. The copy on the device goes with it. A failure leaves both in
+place and logs a warning, so call it again.
+
+```kotlin
+FounderPing.deleteData()
+```
 
 ### goLive
 
@@ -349,6 +362,29 @@ Being a build of its own, the clone needs two things from you:
   clone names its own: `agp` in `android/gradle/libs.versions.toml`. If yours is
   different, set it to yours; otherwise the build stops with
   `Using multiple versions of the Android Gradle plugin(…) in the same build is not allowed`.
+
+### 4.5 Data safety
+
+Play Console → **App content → Data safety** is a form you fill in. The Play
+listing shows the result. For what the widget itself sends, mark each of these
+as collected and not shared. FounderPing and the AI providers named in the
+[privacy policy](https://founderping.app/legal/privacy) process it on your
+behalf, which Play counts as service providers, not sharing.
+
+| Data type | When | Purpose |
+| --- | --- | --- |
+| Messages | Always. The chat text. | App functionality |
+| User IDs | Only if you call `setUser` | App functionality |
+| App interactions | Always. Opens, closes, whether a message was voice | Analytics |
+| Approximate location | Always. Country, from a truncated IP address | App functionality |
+| Device or other IDs | Always. A random id the widget creates per install | App functionality |
+
+Voice is not a row. The recording is transcribed and then discarded, which Play
+treats as not collected. The transcript is the message, and it is already in
+the Messages row.
+
+`deleteData()` is the in-app way a user asks for the widget's copy of their
+data to be deleted. Say so if the form asks.
 
 ---
 

@@ -1,8 +1,6 @@
 import Foundation
 
-/// `value` as JavaScript source. JSON is a subset of JavaScript, so every
-/// value spliced into a script goes through here — strings above all, whose
-/// quotes and line breaks would otherwise end the literal early.
+/// JSON, which is JavaScript. A string spliced in raw would end its literal at the first quote.
 func javaScriptLiteral(_ value: some Encodable) -> String {
     // Only non-finite floating-point numbers fail to encode, and nothing here
     // passes one.

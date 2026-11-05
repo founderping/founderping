@@ -7,10 +7,8 @@ import android.webkit.WebViewRenderProcess
 import android.webkit.WebViewRenderProcessClient
 
 /**
- * Tells the overlay when its renderer stops answering and when it answers
- * again. WebView only notices once input or a navigation has gone unanswered
- * for a few seconds, and repeats the first call every few seconds while it
- * lasts, so the overlay only steps aside once the user has been ignored.
+ * WebView notices only after input has gone unanswered for a few seconds, and
+ * repeats until it answers.
  */
 @TargetApi(Build.VERSION_CODES.Q)
 internal class OverlayRenderProcessClient(
