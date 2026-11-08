@@ -32,9 +32,10 @@ Then put your project key in `AndroidManifest.xml`, inside `<application>`:
 
 That is the whole install, and it takes no code. The library starts with your
 app, lays its overlay over every activity as it starts and takes it away when
-the activity goes, so no screen has to know. Out of the box that gives users
-the sticky feedback button your project starts with and puts them on Live; the
-calls below are what put it to work at your own moments.
+the activity goes, so no screen has to know. Out of the box that puts users on
+Live, and shows the sticky feedback button once you switch on **Default
+Touchpoint** (Dashboard → **Stand-in**), which a new project starts with off.
+The calls below are what put it to work at your own moments.
 
 > **Add your app to Allowed Android Apps before you test.** FounderPing rejects
 > every request from Android until the project lists your app under
@@ -101,9 +102,9 @@ feedbackButton.setOnClickListener {
 }
 ```
 
-`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. The
-first `mount` of a name the Dashboard hasn't seen registers it, so you can place
-hooks before configuring anything.
+`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. A name
+that isn't a switched-on Touchpoint in the Dashboard does nothing but say so in
+the page's console, so you can place hooks before configuring anything.
 
 Worth doing once, early: walk your product and `mount()` every moment you might
 ever want feedback from — checkout complete, onboarding milestones, error
@@ -172,6 +173,7 @@ optional argument.
 | --- | --- |
 | [`mount(touchpoint)`](#mount) | Declares that a named Touchpoint moment just happened. |
 | [`setUser(identifier)`](#setuser) | Binds the session to one of your users, or clears it. |
+| [`deleteData()`](#deletedata) | Erases this visitor's conversations. |
 | [`goLive()`](#golive) | Makes this user reachable in person, right now. |
 | [`notifyIfLive(event, note?, quietMs?)`](#notifyiflive) | Tells you something happened to a reachable user. |
 | [`hide()`](#hide) | Puts the widget away without counting as a dismissal. |
@@ -203,6 +205,18 @@ Takes effect immediately and survives restarts.
 
 `identifier` is your stable id for the end user. Trimmed; empty or `null`
 resets to anonymous, which is what you want on logout.
+
+### deleteData
+
+Call it from your account-deletion flow. It erases the conversations of the
+session on this device and, when that session was bound with `setUser`, every
+other session in the project bound to the same id. An anonymous session erases
+only itself. The copy on the device goes with it. A failure leaves both in
+place and logs a warning, so call it again.
+
+```kotlin
+FounderPing.deleteData()
+```
 
 ### goLive
 
@@ -350,6 +364,29 @@ Being a build of its own, the clone needs two things from you:
   different, set it to yours; otherwise the build stops with
   `Using multiple versions of the Android Gradle plugin(…) in the same build is not allowed`.
 
+### 4.5 Data safety
+
+Play Console → **App content → Data safety** is a form you fill in. The Play
+listing shows the result. For what the widget itself sends, mark each of these
+as collected and not shared. FounderPing and the AI providers named in the
+[privacy policy](https://founderping.app/legal/privacy) process it on your
+behalf, which Play counts as service providers, not sharing.
+
+| Data type | When | Purpose |
+| --- | --- | --- |
+| Messages | Always. The chat text. | App functionality |
+| User IDs | Only if you call `setUser` | App functionality |
+| App interactions | Always. Opens, closes, whether a message was voice | Analytics |
+| Approximate location | Always. Country, from a truncated IP address | App functionality |
+| Device or other IDs | Always. A random id the widget creates per install | App functionality |
+
+Voice is not a row. The recording is transcribed and then discarded, which Play
+treats as not collected. The transcript is the message, and it is already in
+the Messages row.
+
+`deleteData()` is the in-app way a user asks for the widget's copy of their
+data to be deleted. Say so if the form asks.
+
 ---
 
 ## 5. Runtime reference
@@ -450,6 +487,9 @@ logout. The user then looks like a new one.
 
 In rough order of likelihood:
 
+- **Default Touchpoint is off**, as it is in a new project (Dashboard →
+  **Stand-in**) — there is no sticky button, so nothing shows until a `mount`
+  of yours fires.
 - **Allowed Android Apps** doesn't list this app's id (§4.2) — nothing loads at
   all, which looks exactly like nothing firing. A debug build says so in
   logcat, naming the id to add (§6.3).

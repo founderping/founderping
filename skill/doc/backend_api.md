@@ -168,7 +168,7 @@ founderping request GET /projects/PROJECT_ID
 
 Returns `{ id, name, organization_id, metadata, client_auth, doc, created_at }`.
 `client_auth` holds the allow-lists (`domains` for the web, `android_apps` for
-Android) and widget keys; `metadata` holds the tag tree
+Android, `ios_apps` for iOS) and widget keys; `metadata` holds the tag tree
 and attention list (edit those via their dedicated endpoints below); `doc` is the
 product doc as **plain text** (the server stores it base64-encoded, but you never
 deal with base64).
@@ -176,8 +176,9 @@ deal with base64).
 ### `PATCH /projects/{id}`
 
 Update any of `name`, `domains` (the web widget's allow-list, ≤ 50 entries),
-`android_apps` (the Android library's allow-list of `applicationId`s, ≤ 50
-entries), or `metadata` (free-form extras, shallow-merged). At least one field
+`android_apps` (the Android library's allow-list of `applicationId`s, ≤ 5
+entries), `ios_apps` (the iOS package's allow-list of bundle IDs, ≤ 5 entries),
+or `metadata` (free-form extras, shallow-merged). At least one field
 is required, and an allow-list you send replaces the old one whole.
 `tag_tree` and `attention_list` are **not** accepted here — they're validated, so
 set them through their dedicated endpoints below.
@@ -185,6 +186,7 @@ set them through their dedicated endpoints below.
 ```bash
 founderping request PATCH /projects/PROJECT_ID '{"domains":["example.com","app.example.com"]}'
 founderping request PATCH /projects/PROJECT_ID '{"android_apps":["com.example.app","com.example.app.debug"]}'
+founderping request PATCH /projects/PROJECT_ID '{"ios_apps":["com.example.app"]}'
 ```
 
 
@@ -533,9 +535,9 @@ as"**), since avatar upload isn't available over the API. Empty once handled.
 ### `GET /projects/{id}/verify`
 
 "Is the widget wired up and can it run?" Fix anything `false`, then re-run —
-except the two allow-list checks, which go one per platform: `domains_ok` for
-the web and `android_apps_ok` for Android. Only the ones for platforms the
-product ships on need to be `true`.
+except the allow-list checks, which go one per platform: `domains_ok` for the
+web, `android_apps_ok` for Android and `ios_apps_ok` for iOS. Only the ones for
+platforms the product ships on need to be `true`.
 
 ```bash
 founderping request GET /projects/PROJECT_ID/verify
@@ -545,6 +547,7 @@ founderping request GET /projects/PROJECT_ID/verify
 {
   "domains_ok": true,
   "android_apps_ok": false,
+  "ios_apps_ok": false,
   "has_active_topic": true,
   "has_enabled_touchpoint": true,
   "has_project_key": true,
@@ -554,8 +557,8 @@ founderping request GET /projects/PROJECT_ID/verify
 }
 ```
 
-That is a project ready to run on the web; it would need `android_apps_ok` only
-once the product ships an Android app too.
+That is a project ready to run on the web; it would need `android_apps_ok` or
+`ios_apps_ok` only once the product ships an app on that platform too.
 
 Every project is created with `localhost` and `127.0.0.1` already allowed, so the
 widget runs on a dev machine out of the box. Those entries don't satisfy
@@ -568,7 +571,8 @@ served from is on the list (**Settings → Project → Allowed Domains**, or
 `PATCH /projects/{id}` with `android_apps`); until then every request from the
 app is refused. It only checks that the list isn't empty, so make sure the app's
 own ids are on it, including the suffixed one each `applicationIdSuffix` build
-type reports.
+type reports. `ios_apps_ok` is the same for `ios_apps` and the app's bundle IDs
+(**Settings → Project → Allowed iOS Apps**).
 
 ---
 

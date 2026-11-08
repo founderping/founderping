@@ -13,13 +13,9 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 
 /**
- * Everything the overlay needs from a [WebViewClient]: keep the hosted page in
- * the WebView, keep everything else out, and survive a dead renderer.
- *
- * The page holds your project key in reachable JavaScript, so letting this
- * WebView navigate off-site would hand that key to whatever loaded next. Of
- * everything this shell sets up, that is the one that fails *unsafely* if it is
- * wrong — hence [decideNavigation], which is unit-tested.
+ * Keep the hosted page in, everything else out, and survive a dead renderer.
+ * The page holds the project key, so a wrong navigation decision hands it to
+ * whatever loads next — [decideNavigation] is the tested half.
  */
 internal class OverlayClient(
     private val hosted: HostedOrigin,
@@ -52,9 +48,8 @@ internal class OverlayClient(
         }
 
     /**
-     * Only ever called from API 26, where WebView renderers became separate
-     * processes, and the library does not start below it. True even when
-     * handling it failed, since false is what takes the host app down.
+     * API 26+, where the library starts. True even if handling failed: false
+     * takes the host app down.
      */
     @TargetApi(Build.VERSION_CODES.O)
     override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean =

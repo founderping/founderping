@@ -64,7 +64,7 @@ Prefer the UI? **Sign up free** and set it up in the Dashboard instead—same en
 ### Step 1 — Decide what to ask (Topics)
 
 1. **Create Topics.** A Topic is something you want FounderPing to talk to users about—a churn reason, a reaction to a new feature, an onboarding check. Which flavor it is comes down to one question: **who starts the conversation?**
-  - **Reactive Topics — the user comes to you.** Every project starts with one, the **Default Topic**, sitting behind a small sticky side button so users can open it whenever they want to say something: a general “tell us anything” helper. Add more for the entry points you place yourself—a “Talk to the founder” button, a link in your help menu—and they open the moment they’re tapped.
+  - **Reactive Topics — the user comes to you.** Every project starts with one, the **Default Topic**: a general “tell us anything” helper behind a small sticky side button, so users can open it whenever they want to say something once you switch **Default Touchpoint** on (Step 2). Add more for the entry points you place yourself—a “Talk to the founder” button, a link in your help menu—and they open the moment they’re tapped.
   - **Proactive Topics — you go to the user.** Each one focuses on a single question or a specific class of issue, and the AI raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
 
 Both flavors are configured through the same two core concepts, edited in the Dashboard:
@@ -98,7 +98,7 @@ This is the main path: an embedded widget that brings your Topics to users right
 1. **Touchpoints — naming the moments.** A **Touchpoint** is a named hook you place in your code at a meaningful moment, e.g. `founderping.mount("post_checkout")`. It’s just a label for “something interesting happened here”; *what* should be asked there is decided later in the Dashboard, not in your code.
 2. **Bind Topics to Touchpoints (with Conditions).** In the Dashboard you bind one or more Topics to each Touchpoint, so firing that moment can start the right conversation. Bindings can carry **Conditions** that gate when they’re allowed to fire—time windows, weekdays, and per-user cooldowns (see *Appendix A — Touchpoint Condition types* for the full list).
   The **Default Topic** arrives already bound to a reserved Touchpoint of its own, so it needs no `mount(...)` from you—switch **Default Touchpoint** on and it shows as the sticky “tell us anything” button. Everything else is bound here: **Proactive Topics** so they pop up at the right moment, and any further **Reactive Topic** so the button *you* placed opens the chat you meant. A Touchpoint has no flavor of its own—it takes it from the Topics bound to it, so they must all be the same flavor, and the first one you bind settles whether this Touchpoint pops up on its own or waits for a tap.
-3. **Integrate the widget once.** Install it—one script tag on the web, one library in an Android app—and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard—no further code changes per question. (Concrete snippets, every method, and the runtime mechanics—coalesce, Conditions, and Guards—are in the guide for your platform: `doc/web.md` or `doc/android.md`.)
+3. **Integrate the widget once.** Install it—one script tag on the web, one library in an Android or iOS app—and place your `mount(...)` calls at the moments you named. After this, which Topic fires where, and under what Conditions, is all controlled from the Dashboard—no further code changes per question. (Concrete snippets, every method, and the runtime mechanics—coalesce, Conditions, and Guards—are in the guide for your platform: `doc/web.md`, `doc/android.md` or `doc/ios.md`.)
 
 **Path B — Direct Links (outside your product)**
 
@@ -214,7 +214,7 @@ The **Hint** is re-read before every turn of a live conversation to decide what 
 
 One principle runs through all of it: **your code only names moments—the Dashboard decides what to ask and when.** You integrate once; from then on you add, retarget, or retire questions entirely from the Dashboard, with no code changes or releases.
 
-**Everything your code needs is in one guide per platform**: `doc/web.md` for a website or web app, `doc/android.md` for an Android app. Each has worked examples to copy, the install, every method, the project key and allowlist setup, and the runtime mechanics behind it; the two describe the same widget and differ only where the platform does. Point your coding agent at the one for your product and it can do the integration for you.
+**Everything your code needs is in one guide per platform**: `doc/web.md` for a website or web app, `doc/android.md` for an Android app, `doc/ios.md` for an iOS app. Each has worked examples to copy, the install, every method, the project key and allowlist setup, and the runtime mechanics behind it; they describe the same widget and differ only where the platform does. Point your coding agent at the one for your product and it can do the integration for you.
 
 ## 5. Key concepts & settings
 

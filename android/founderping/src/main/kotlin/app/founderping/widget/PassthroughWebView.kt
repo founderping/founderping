@@ -7,15 +7,11 @@ import android.webkit.WebView
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * A fullscreen transparent WebView that keeps only the touches the page says it
- * painted on and lets the rest reach the app underneath.
+ * Keeps the touches the page claims and lets the rest through.
  *
- * **This view has to be a sibling inside the activity's own window** — never a
- * `Dialog`, a `PopupWindow`, or anything else with a window of its own. Android
- * only walks down to the view below when the one above declines the gesture,
- * and that walk stops at the window boundary. From a separate window the only
- * control available is the all-or-nothing `FLAG_NOT_TOUCHABLE`, which cannot
- * express "claim this rectangle and nothing else".
+ * Has to be a sibling in the activity's own window. The walk to the view below
+ * stops at a window boundary, and a window's only lever is all-or-nothing
+ * `FLAG_NOT_TOUCHABLE`.
  */
 @SuppressLint("ViewConstructor")
 internal class PassthroughWebView(context: Context) : WebView(context) {
@@ -29,11 +25,7 @@ internal class PassthroughWebView(context: Context) : WebView(context) {
 
     // Declined if handling it failed: a broken overlay must not swallow the app's touches.
     override fun dispatchTouchEvent(event: MotionEvent): Boolean = guarded(fallback = false) {
-        // Only the opening event decides ownership. Android delivers the rest of
-        // a gesture to whoever accepted ACTION_DOWN, which is exactly what keeps
-        // a drag that starts on the panel working after it leaves the panel —
-        // and what stops a scroll that started on the app from being stolen when
-        // the panel happens to move under the finger.
+        // Only ACTION_DOWN decides. The rest of the gesture stays with whoever took it.
         if (event.actionMasked == MotionEvent.ACTION_DOWN &&
             !hitRegion.get().contains(event.x.toInt(), event.y.toInt())
         ) {

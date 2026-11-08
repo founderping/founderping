@@ -9,9 +9,8 @@ import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
 
 /**
- * Arrives in the host activity's `onRequestPermissionsResult`, where nothing
- * claims it. Kept within the low 16 bits, which AndroidX leaves to the activity
- * itself rather than routing to a fragment.
+ * Lands in the host activity's `onRequestPermissionsResult`, which nothing
+ * claims. Low 16 bits stay with the activity, not a fragment.
  */
 private const val MICROPHONE_REQUEST = 0x4650
 
@@ -29,18 +28,8 @@ internal class OverlayChromeClient(
     private val awaitingUser = ArrayList<PermissionRequest>()
 
     /**
-     * Handled in both directions, and that is the point.
-     *
-     * WebView logs every console line to logcat by itself, under the `chromium`
-     * tag, from release builds too — so a shipped app embedding us would narrate
-     * whatever the widget is discussing to anyone who attaches a cable.
-     * Returning true is what stops that. A release build therefore says *less*
-     * for having integrated us, not more.
-     *
-     * In a debug build the line comes out under our own tag instead, which is
-     * worth having because the page is hard to see into: it is transparent, it
-     * passes touches through, and anything it draws that is not the widget is
-     * visible but untappable.
+     * Returning true stops WebView logging every line to logcat under `chromium`,
+     * which it does from release builds too. A debug build reprints it under our tag.
      */
     override fun onConsoleMessage(message: ConsoleMessage): Boolean = guarded(fallback = true) {
         if (logConsole) {
@@ -55,14 +44,7 @@ internal class OverlayChromeClient(
         true
     }
 
-    /**
-     * Only ever the microphone, and only ever to the hosted page.
-     *
-     * Declaring `RECORD_AUDIO` is your app's decision, and the widget offers no
-     * mic without it. Asking the user is ours, and happens here, on their first
-     * tap of the mic: the one moment the reason needs no explaining, and one only
-     * the widget sees. If they decline, the widget tells them where to allow it.
-     */
+    /** Only the microphone, only for the hosted page. The user is asked on the first tap. */
     override fun onPermissionRequest(request: PermissionRequest) = guarded {
         when {
             PermissionRequest.RESOURCE_AUDIO_CAPTURE !in request.resources ->
@@ -79,10 +61,8 @@ internal class OverlayChromeClient(
     }
 
     /**
-     * Where the user's answer is read. It is delivered to the activity, which
-     * is the host's, but the system prompt pauses the activity, so resuming
-     * means the answer is in. Android pauses it even when it answers without
-     * asking — after the user chose never to be asked — so nothing waits forever.
+     * The answer arrives at the host activity. The prompt pauses it even when
+     * Android answers without asking, so resuming means the answer is in.
      */
     fun onHostResumed() {
         if (awaitingUser.isEmpty()) return
