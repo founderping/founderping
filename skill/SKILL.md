@@ -115,7 +115,8 @@ Get the tooling in place so the rest is possible.
     **Stand-in** runs a short voice-first chat on the spot — follow-ups in the moment,
     not a one-line text box — so "it's broken" becomes something you can act on.
   - **Always-on reactive helper.** Alongside those pop-ups, one sticky "tell us
-    anything" button stays available so users can reach out whenever they want.
+    anything" button can stay available so users can reach out whenever they want;
+    it's the Dashboard's **Default Touchpoint**, which a new project starts with off.
   - **Structured insight, not a transcript dump.** Every chat is auto-summarized into
     tagged, sentiment-scored **Points** you can filter and trend in the **Overview** dashboard.
 

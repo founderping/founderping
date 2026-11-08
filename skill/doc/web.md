@@ -82,9 +82,9 @@ You mark the moments; the Dashboard decides what gets asked there.
 </script>
 ```
 
-`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. The
-first `mount` of a name the Dashboard hasn't seen registers it, so you can place
-hooks before configuring anything.
+`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. A name
+that isn't a switched-on Touchpoint in the Dashboard does nothing but say so in
+the page's console, so you can place hooks before configuring anything.
 
 Worth doing once, early: walk your product and `mount()` every moment you might
 ever want feedback from — checkout complete, onboarding milestones, error
@@ -376,6 +376,9 @@ carry across domains (`www.example.com` → `app.example.com` starts clean).
 
 In rough order of likelihood:
 
+- **Default Touchpoint is off**, as it is in a new project (Dashboard →
+  **Stand-in**) — there is no sticky button, so nothing shows until a `mount`
+  of yours fires.
 - **Allowed domains** are empty or don't cover this origin (§4.2) — nothing
   loads at all, which looks exactly like nothing firing.
 - **A Guard is active** — the user recently closed the widget, or is still

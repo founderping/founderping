@@ -19,6 +19,7 @@ private final class BridgedPage: NSObject, WKNavigationDelegate {
     let webView: WKWebView
     private(set) var configReads = 0
     private(set) var hitRegion: HitRegion?
+    private(set) var startFailures = 0
     private var loaded: CheckedContinuation<Void, Never>?
 
     init(screen: String) {
@@ -32,7 +33,8 @@ private final class BridgedPage: NSObject, WKNavigationDelegate {
         let bridge = NativeBridge(
             config: widget,
             onConfigRead: { [weak self] in self?.configReads += 1 },
-            onHitRegion: { [weak self] in self?.hitRegion = $0 }
+            onHitRegion: { [weak self] in self?.hitRegion = $0 },
+            onStartFailed: { [weak self] in self?.startFailures += 1 }
         )
         bridge.listen(on: scripts)
         scripts.addUserScript(bridge.script(screen: screen))
@@ -126,4 +128,15 @@ func hitRegionArrives() async {
     _ = await page.evaluate(#"window.FounderPingNative.setHitRegion('[{"x":1,"y":2,"width":3,"height":4}]')"#)
 
     #expect(page.hitRegion?.rects == [CGRect(x: 1, y: 2, width: 3, height: 4)])
+}
+
+@MainActor
+@Test("a widget that did not start says so")
+func startFailureArrives() async {
+    let page = BridgedPage(screen: "TasksViewController")
+    await page.load(from: "https://founderping.app/native")
+
+    _ = await page.evaluate("window.FounderPingNative.startFailed()")
+
+    #expect(page.startFailures == 1)
 }

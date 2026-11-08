@@ -64,7 +64,7 @@ Prefer the UI? **Sign up free** and set it up in the Dashboard instead—same en
 ### Step 1 — Decide what to ask (Topics)
 
 1. **Create Topics.** A Topic is something you want FounderPing to talk to users about—a churn reason, a reaction to a new feature, an onboarding check. Which flavor it is comes down to one question: **who starts the conversation?**
-  - **Reactive Topics — the user comes to you.** Every project starts with one, the **Default Topic**, sitting behind a small sticky side button so users can open it whenever they want to say something: a general “tell us anything” helper. Add more for the entry points you place yourself—a “Talk to the founder” button, a link in your help menu—and they open the moment they’re tapped.
+  - **Reactive Topics — the user comes to you.** Every project starts with one, the **Default Topic**: a general “tell us anything” helper behind a small sticky side button, so users can open it whenever they want to say something once you switch **Default Touchpoint** on (Step 2). Add more for the entry points you place yourself—a “Talk to the founder” button, a link in your help menu—and they open the moment they’re tapped.
   - **Proactive Topics — you go to the user.** Each one focuses on a single question or a specific class of issue, and the AI raises it on its own at the right moment (e.g. after checkout, on a power-user milestone).
 
 Both flavors are configured through the same two core concepts, edited in the Dashboard:

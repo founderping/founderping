@@ -45,9 +45,10 @@ func application(
 
 In a SwiftUI app, call it from your `App`'s initializer instead. That is the
 whole install. The package lays its overlay over each of your window scenes as
-it comes to the front, so no screen has to know. Out of the box that gives
-users the sticky feedback button your project starts with and puts them on
-Live; the calls below are what put it to work at your own moments.
+it comes to the front, so no screen has to know. Out of the box that puts users
+on Live, and shows the sticky feedback button once you switch on **Default
+Touchpoint** (Dashboard → **Stand-in**), which a new project starts with off.
+The calls below are what put it to work at your own moments.
 
 > **Add your app to Allowed iOS Apps before you test.** FounderPing rejects
 > every request from iOS until the project lists your app under
@@ -116,9 +117,9 @@ feedbackButton.addAction(UIAction { _ in
 
 In SwiftUI, the same calls go in `.onAppear` and in a `Button`'s action.
 
-`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. The
-first `mount` of a name the Dashboard hasn't seen registers it, so you can place
-hooks before configuring anything.
+`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. A name
+that isn't a switched-on Touchpoint in the Dashboard does nothing but say so in
+the page's console, so you can place hooks before configuring anything.
 
 Worth doing once, early: walk your product and `mount()` every moment you might
 ever want feedback from — checkout complete, onboarding milestones, error
@@ -359,6 +360,11 @@ discarded, which Apple treats as not collected when nothing is kept after the
 request. The transcript is the chat text, and it is already under Customer
 Support.
 
+Say in your own privacy policy that the chat, voice included, goes to
+third-party AI (App Review Guideline 5.1.2(i)). FounderPing passes it to the AI
+providers named in its [privacy policy](https://founderping.app/legal/privacy),
+so you can point there for the list.
+
 `deleteData()` is what you call from your in-app account deletion so the
 widget's copy of that user's data goes too.
 
@@ -464,14 +470,17 @@ alone. Deleting the app clears it, and the user then looks like a new one.
 
 In rough order of likelihood:
 
+- **Default Touchpoint is off**, as it is in a new project (Dashboard →
+  **Stand-in**) — there is no sticky button, so nothing shows until a `mount`
+  of yours fires.
 - **Allowed iOS Apps** doesn't list this app's bundle ID (§4.2) — nothing loads
   at all, which looks exactly like nothing firing. A debug build says so in
   Xcode's console, naming the id to add (§6.3).
 - **`FounderPing.start()` is never called, or the Info.plist has no project
   key** (§1.1) — the widget doesn't start, and the log says so.
-- **The widget's page didn't load** — no network on the device, say. The
-  overlay stays hidden rather than show an error page, and tries again with the
-  next call; Safari's Web Inspector shows what it got (§6.3).
+- **The widget's page didn't load or start** — no network on the device, say.
+  The overlay stays hidden rather than show an error page, and tries again with
+  the next call; Safari's Web Inspector shows what it got (§6.3).
 - **The device runs iOS 16 or earlier** — the widget stays off below iOS 17
   (§1.1), and the log says so.
 - **Your app uses App-Bound Domains** without `founderping.app` among them

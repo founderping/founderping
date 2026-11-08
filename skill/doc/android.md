@@ -32,9 +32,10 @@ Then put your project key in `AndroidManifest.xml`, inside `<application>`:
 
 That is the whole install, and it takes no code. The library starts with your
 app, lays its overlay over every activity as it starts and takes it away when
-the activity goes, so no screen has to know. Out of the box that gives users
-the sticky feedback button your project starts with and puts them on Live; the
-calls below are what put it to work at your own moments.
+the activity goes, so no screen has to know. Out of the box that puts users on
+Live, and shows the sticky feedback button once you switch on **Default
+Touchpoint** (Dashboard → **Stand-in**), which a new project starts with off.
+The calls below are what put it to work at your own moments.
 
 > **Add your app to Allowed Android Apps before you test.** FounderPing rejects
 > every request from Android until the project lists your app under
@@ -101,9 +102,9 @@ feedbackButton.setOnClickListener {
 }
 ```
 
-`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. The
-first `mount` of a name the Dashboard hasn't seen registers it, so you can place
-hooks before configuring anything.
+`mount()` says *"this moment happened"*, not *"open a dialog"* — see §2. A name
+that isn't a switched-on Touchpoint in the Dashboard does nothing but say so in
+the page's console, so you can place hooks before configuring anything.
 
 Worth doing once, early: walk your product and `mount()` every moment you might
 ever want feedback from — checkout complete, onboarding milestones, error
@@ -486,6 +487,9 @@ logout. The user then looks like a new one.
 
 In rough order of likelihood:
 
+- **Default Touchpoint is off**, as it is in a new project (Dashboard →
+  **Stand-in**) — there is no sticky button, so nothing shows until a `mount`
+  of yours fires.
 - **Allowed Android Apps** doesn't list this app's id (§4.2) — nothing loads at
   all, which looks exactly like nothing firing. A debug build says so in
   logcat, naming the id to add (§6.3).

@@ -116,7 +116,7 @@ final class Overlays: NSObject {
 private func scenesInFront() -> [UIWindowScene] {
     UIApplication.shared.connectedScenes
         .compactMap { $0 as? UIWindowScene }
-        .filter { $0.activationState == .foregroundActive }
+        .filter { $0.activationState == .foregroundActive && $0.session.role == .windowApplication }
 }
 
 /// The scene's key window, while it is an ordinary one. An alert-level window

@@ -19,7 +19,8 @@ final class Overlay {
         case loading
         /// Ours, and read its config: calls can run.
         case ready
-        /// Never arrived, or its process ended. Loaded again when next wanted.
+        /// Never arrived, its widget never started, or its process ended.
+        /// Loaded again when next wanted.
         case lost
     }
 
@@ -31,7 +32,8 @@ final class Overlay {
     private lazy var bridge = NativeBridge(
         config: config,
         onConfigRead: { [weak self] in self?.pageReady() },
-        onHitRegion: { [weak self] in self?.webView.hitRegion = $0 }
+        onHitRegion: { [weak self] in self?.webView.hitRegion = $0 },
+        onStartFailed: { [weak self] in self?.lose() }
     )
     private lazy var navigationDelegate = OverlayNavigationDelegate(
         hosted: config.hostedOrigin,
@@ -102,12 +104,19 @@ final class Overlay {
         configuration.websiteDataStore = dataStore
         configuration.userContentController = scripts
         configuration.mediaTypesRequiringUserActionForPlayback = []
+        // An iPad would browse as a Mac, which lets a pinch zoom the page away
+        // from the hit region it reports.
+        configuration.defaultWebpagePreferences.preferredContentMode = .mobile
 
         let webView = PassthroughWebView(frame: .zero, configuration: configuration)
         webView.isHidden = true
+        webView.accessibilityElementsHidden = true
         webView.isOpaque = false
         webView.backgroundColor = .clear
         webView.scrollView.backgroundColor = .clear
+        // Of two scroll views that scroll to the top, a status bar tap scrolls
+        // neither, and the app's own stops answering it.
+        webView.scrollView.scrollsToTop = false
         webView.isInspectable = inspectable
         return webView
     }

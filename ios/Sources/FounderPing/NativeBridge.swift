@@ -9,17 +9,24 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
     static let global = "FounderPingNative"
 
     private enum Message: String, CaseIterable {
-        case configRead, hitRegion
+        case configRead, hitRegion, startFailed
     }
 
     private let config: WidgetConfig
     private let onConfigRead: () -> Void
     private let onHitRegion: (HitRegion) -> Void
+    private let onStartFailed: () -> Void
 
-    init(config: WidgetConfig, onConfigRead: @escaping () -> Void, onHitRegion: @escaping (HitRegion) -> Void) {
+    init(
+        config: WidgetConfig,
+        onConfigRead: @escaping () -> Void,
+        onHitRegion: @escaping (HitRegion) -> Void,
+        onStartFailed: @escaping () -> Void
+    ) {
         self.config = config
         self.onConfigRead = onConfigRead
         self.onHitRegion = onHitRegion
+        self.onStartFailed = onStartFailed
     }
 
     /// Once per WebView, since `scripts` holds on to its handlers.
@@ -45,7 +52,8 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
                   native.\(Message.configRead.rawValue).postMessage(null);
                   return \(javaScriptLiteral(configJSON(screen: screen)));
                 },
-                setHitRegion: function (json) { native.\(Message.hitRegion.rawValue).postMessage(json); }
+                setHitRegion: function (json) { native.\(Message.hitRegion.rawValue).postMessage(json); },
+                startFailed: function () { native.\(Message.startFailed.rawValue).postMessage(null); }
               };
             })();
             """
@@ -77,6 +85,9 @@ final class NativeBridge: NSObject, WKScriptMessageHandler {
         switch Message(rawValue: message.name) {
         case .configRead: onConfigRead()
         case .hitRegion: onHitRegion(HitRegion.parse(message.body as? String ?? ""))
+        case .startFailed:
+            logger.warning("the widget did not start, so it is tried again when next wanted")
+            onStartFailed()
         case nil: break
         }
     }
