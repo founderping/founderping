@@ -56,7 +56,8 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "app.founderping"
                 artifactId = "widget"
-                version = "0.1.0"
+                // The release tag, which publish.sh hands over; any other build is a local one.
+                version = providers.gradleProperty("releaseVersion").getOrElse("0.0.0-dev")
                 pom {
                     name = "FounderPing for Android"
                     description = "Runs the FounderPing feedback widget inside an Android app."

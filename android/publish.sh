@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Builds the library and publishes it to Maven Central as app.founderping:widget,
-# at the version set in founderping/build.gradle.kts:
+# at the version of the release tag HEAD is on: vX.Y.Z publishes X.Y.Z. The
+# same tag is the iOS and CLI release, so the three never drift apart:
 #
+#   git tag vX.Y.Z && git push origin vX.Y.Z
 #   ./publish.sh
 #
 # Reads two gitignored files next to it, both explained in publish.env.example:
@@ -16,6 +18,15 @@ BUNDLE=founderping/build/central/bundle.zip
 POLL_SECONDS=5
 
 fail() { echo "$*" >&2; exit 1; }
+
+# A tree with changes would publish code no tag holds, and a tag missing from
+# GitHub is no iOS or CLI release.
+tag=$(git describe --tags --exact-match --match 'v[0-9]*' --dirty 2>/dev/null) ||
+  fail "HEAD is on no release tag: tag it first (git tag vX.Y.Z)"
+[[ $tag != *-dirty ]] || fail "The tree has uncommitted changes, which ${tag%-dirty} does not hold"
+git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null ||
+  fail "$tag is not on origin: push it first (git push origin $tag)"
+version=${tag#v}
 
 command -v gpg >/dev/null || fail "gpg not found: install GnuPG, which signs the release"
 [[ -f publish.env ]] || fail "publish.env not found: copy publish.env.example and fill it in"
@@ -39,7 +50,7 @@ gpg --homedir "$gnupg_home" --batch --quiet --pinentry-mode loopback --passphras
 # No daemon, so the passphrase doesn't stay behind in a background JVM; no
 # stdin, so Gradle can't swallow the answer to the prompt below.
 SIGNING_GNUPG_HOME=$gnupg_home SIGNING_KEY_PASSWORD=$SIGNING_KEY_PASSWORD \
-  ./gradlew --no-daemon \
+  ./gradlew --no-daemon -PreleaseVersion="$version" \
   :founderping:clean :founderping:test :founderping:lintRelease :founderping:centralBundle </dev/null
 drop_keyring
 

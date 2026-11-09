@@ -1,16 +1,19 @@
 # FounderPing for Android
 
+[![Maven Central](https://img.shields.io/maven-central/v/app.founderping/widget)](https://central.sonatype.com/artifact/app.founderping/widget)
+
 The FounderPing feedback widget inside your Android app: the same widget that
 runs on the web, in a transparent WebView over each of your activities. It
 depends on nothing but the Android framework and the Kotlin standard library.
 
 Adding it to your app, every call, and what to check when something goes wrong
 are in the [Android integration guide](../skill/doc/android.md), also published
-at <https://founderping.app/doc/android.md>. The short version:
+at <https://founderping.app/doc/android.md>. The short version, with `VERSION`
+the latest release, shown in the badge above:
 
 ```kotlin
 // app/build.gradle.kts
-implementation("app.founderping:widget:0.1.0")
+implementation("app.founderping:widget:VERSION")
 ```
 
 That fetches it prebuilt from Maven Central. To compile it from this
@@ -33,7 +36,7 @@ How each part works, and why, is written up in the source, file by file.
 
 ```
 ./gradlew :founderping:assembleRelease :founderping:test
-./gradlew :founderping:publishToMavenLocal   # to consume it from another build
+./gradlew :founderping:publishToMavenLocal   # as 0.0.0-dev, to consume it from another build
 ```
 
 Needs JDK 17 and an Android SDK with API 34.
@@ -45,10 +48,12 @@ so without this every resource task fails with an exec format error.
 ## Publishing
 
 `./publish.sh` tests, builds and signs the library, then uploads it to Maven
-Central as `app.founderping:widget`, at the version in
-`founderping/build.gradle.kts`. The Portal validates the upload first, and the
-script asks before making it public, because a published version can never be
-changed.
+Central as `app.founderping:widget`, at the version of the release tag HEAD is
+on: `vX.Y.Z` publishes `X.Y.Z`. That tag is the iOS and CLI release as well (see
+[Releases](../README.md#releases)), so tag and push first; the script refuses a
+commit with no tag, a tree with uncommitted changes, and a tag not yet on
+GitHub. The Portal validates the upload first, and the script asks before making
+it public, because a published version can never be changed.
 
 It needs GnuPG, which does the signing, and reads two gitignored files next to
 it: `publish.env`, copied from `publish.env.example`, which explains each

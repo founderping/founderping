@@ -5,12 +5,15 @@
 ### 1.1 Install the library
 
 The library is on Maven Central, which Android Studio projects already pull
-from, so this step is one line:
+from, so this step is one line. Use the latest version in place of `VERSION`:
+it is listed on [Maven Central](https://central.sonatype.com/artifact/app.founderping/widget),
+and as `<release>` in its
+[metadata](https://repo1.maven.org/maven2/app/founderping/widget/maven-metadata.xml).
 
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("app.founderping:widget:0.1.0")
+    implementation("app.founderping:widget:VERSION")
 }
 ```
 
@@ -348,7 +351,7 @@ includeBuild("../founderping/android") {
 }
 ```
 
-Leave the `implementation("app.founderping:widget:0.1.0")` line from §1.1 as it
+Leave the `implementation("app.founderping:widget:…")` line from §1.1 as it
 is: the substitution stands in for it, whatever version it names, and every
 edit to the clone is in your next build. `main` is the newest source, so it can
 be ahead of the release on Maven Central.
