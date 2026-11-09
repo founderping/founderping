@@ -52,7 +52,9 @@ Run `fp sync_assets` in the main repo first so `skill/doc/` is current, then
 release. CI does this automatically on a `v*` tag (`.github/workflows/release.yml`).
 
 The same tag is also the iOS release, with nothing to upload: Swift Package
-Manager reads package versions off this repository's tags.
+Manager reads package versions off this repository's tags. And it is the Android
+release: [`android/publish.sh`](android/publish.sh), run on the tagged commit,
+publishes that version to Maven Central. No file carries a version number.
 
 ## License
 
