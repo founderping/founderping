@@ -24,8 +24,9 @@ on a page before you call `founderping.*` there.
 
 **Live** shows you who is in your product right now so you can talk to them
 yourself. Visitors appear on their own after about ten seconds of real
-attention; `goLive()` is that same step on your say-so, and `notifyIfLive()` is
-what actually tells you.
+attention, or as soon as they write to your Stand-in, and you are told about
+both; `goLive()` is that same step on your say-so, and `notifyIfLive()` is
+what tells you about it.
 
 ```html
 <script>
@@ -48,15 +49,16 @@ you have been told about them. Pair the two calls at the moments that matter:
 ```
 
 You get a card on the Dashboard, plus Slack or Discord if the project connected
-either. The event name is the unit of quiet: the same name won't ring again for
-an hour, so a visitor bouncing back and forth costs you one notification rather
-than twenty. Anything your code can notice can reach you —
-`pricing_viewed`, `trial_expiring`, `started_chatting` — so pick the two or
+either. The event name is the unit of quiet: the same name rings again only
+once it has gone 15 minutes without coming up, so a visitor bouncing back and
+forth costs you one notification rather than twenty, however long they keep at
+it. Anything your code can notice can reach you —
+`pricing_viewed`, `trial_expiring`, `export_failed` — so pick the two or
 three where showing up in person changes the outcome.
 
 If you'd rather choose *everyone* who becomes reachable, turn **Automatic
-go-live** off under **Live → Live settings**; then `goLive()` is the only way
-anyone appears.
+go-live** and **Go live when they write** off under **Live → Live settings**;
+then `goLive()` is the only way anyone appears.
 
 ### 1.3 Stand-in — let the AI ask
 
@@ -207,13 +209,14 @@ founderping.notifyIfLive(
 ```
 
 **Only fires for a visitor who is live.** Called before `goLive()` has
-connected, it waits; if the visitor never becomes reachable it is dropped, since
-an alert you can't act on in person is worse than none.
+connected, it waits, keeping only the latest call for each name; if the visitor
+never becomes reachable it is dropped, since an alert you can't act on in
+person is worse than none.
 
 | Parameter | Default | Description |
 | --- | --- | --- |
 | `event` | *required* | A slug for what happened, up to 32 characters matching `^[a-z0-9][a-z0-9_.-]*$`. Lowercased first, so `Pricing_Viewed` shares one quiet window with `pricing_viewed`. |
-| `quietMs` | `3600000` | How long this name then stays quiet, in ms. `0` for something you always want to hear. |
+| `quietMs` | `900000` | How long this name has to go without being called before it notifies again, in ms. Every call starts that wait over, notified or not, so a moment that keeps recurring stays one notification. `0` for something you always want to hear. |
 | `note` | none | One short line of your own to trail the notification. Cut at 120 characters. Never becomes the subject — who the alert is about is resolved server-side, because this string is untrusted. |
 
 ### hide
@@ -368,8 +371,8 @@ carry across domains (`www.example.com` → `app.example.com` starts clean).
 | `BOOTSTRAP_EXPIRES_MINUTES` | **60 minutes** | How long the cached project config is reused before the widget re-fetches it. Server-set; the client honors the bootstrap's `expire_at`. |
 | `FOCUS_GUARD_MS` | **15 minutes** | How long an actively-used conversation is protected from a new `mount`. Resets on each qualifying interaction. |
 | `QUIET_GUARD_MS` | **1 day** | How long the widget stays silent after the user closes it. |
-| `LIVE_INITIAL_DWELL_MS` | **10 seconds** | How much *focused* time a visitor accumulates before automatic go-live lists them. Not counted with Automatic go-live off, nor when you call `goLive()`. |
-| `NOTIFY_DEFAULT_QUIET_MS` | **1 hour** | Default `quietMs`: how long one event name stays silent after notifying you. Kept for the whole browser or app rather than per page, so four open tabs still cost one notification. |
+| `LIVE_INITIAL_DWELL_MS` | **10 seconds** | How much *focused* time a visitor accumulates before automatic go-live lists them. Not counted with Automatic go-live off, nor when you call `goLive()` or the visitor writes to your Stand-in. |
+| `NOTIFY_DEFAULT_QUIET_MS` | **15 minutes** | Default `quietMs`: how long one event name has to go without coming up before it notifies you again — including the automatic notifications about a visitor going live or writing to your Stand-in, so a conversation that keeps going is one notification. Kept for the whole browser or app rather than per page, so four open tabs still cost one notification. |
 | `CONVERSATION_REUSE_WINDOW_MS` | **5 minutes** | Re-firing a Topic within this window of its last showing reopens the same conversation instead of starting a fresh one. |
 
 ### 5.5 When nothing appears

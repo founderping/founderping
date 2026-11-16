@@ -42,7 +42,8 @@ public enum FounderPing {
     }
 
     /// Tell yourself `event` happened, once this user is live. The same event
-    /// stays quiet for `quietMs` (an hour if omitted).
+    /// notifies again only after going `quietMs` without a call (15 minutes if
+    /// omitted); every call restarts that wait.
     public static func notifyIfLive(_ event: String, note: String? = nil, quietMs: Int? = nil) {
         let options = NotifyOptions(note: note, quietMs: quietMs)
         send("founderping.notifyIfLive(\(javaScriptLiteral(event)),\(javaScriptLiteral(options)))")

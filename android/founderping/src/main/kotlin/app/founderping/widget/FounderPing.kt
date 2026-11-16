@@ -67,8 +67,9 @@ object FounderPing {
 
     /**
      * Tell yourself [event] happened, once this user is live. The same event
-     * stays quiet for [quietMs] (an hour if omitted). Waits for go-live and
-     * drops the notice if it never comes.
+     * notifies again only after going [quietMs] without a call (15 minutes if
+     * omitted); every call restarts that wait. Waits for go-live and drops the
+     * notice if it never comes.
      */
     @JvmStatic
     @JvmOverloads
