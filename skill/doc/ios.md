@@ -419,6 +419,12 @@ While a Guard holds, the widget only restores whatever the user already had.
 - If the user is already in one of the surviving Topics, they stay there.
 - Otherwise weighted-random, biased by the **weight** you set per binding.
 
+**Waiting**, if you asked for it. A Proactive Touchpoint can hold its pop-up
+back for a few seconds after winning (`delay_seconds`). Anything that reaches
+the widget in the meantime — another pop-up, the user opening or closing it,
+your own `hide()` — drops it, so a single-page app that wants it tied to one
+page calls `hide()` on the way out.
+
 ### 5.2 Why the user-initiated paths are exempt
 
 Every gate above exists to pace *interruptions*, so the two entry points the

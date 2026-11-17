@@ -384,6 +384,7 @@ server-side.
 | ------------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
 | `probability` | number `0`–`1`           | Mount-time sampling rate — the touchpoint only fires if a per-mount roll passes. Omitted = always fire. Paces **proactive** touchpoints only: one bound to a reactive topic opens the chat the user just asked for, so it is never sampled. |
 | `y_position`  | number `0`–`1`           | Vertical placement of the widget button, as a fraction of viewport height (0 = top).                    |
+| `delay_seconds` | number `0`–`600`       | How long the pop-up waits, once this touchpoint has won, before it shows. Omitted = at once. Anything that reaches the widget meanwhile (another pop-up, the user opening or closing it, `hide()`) drops it. **Proactive** touchpoints only: a reactive one opens the moment the user asks. |
 | `topics`      | array                    | Topic **bindings** — which topics this touchpoint can surface (see below).                              |
 
 
